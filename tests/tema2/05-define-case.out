@@ -1,0 +1,3 @@
+"05-define-case.cl", line 7:13, Syntax error: extraneous input 'self' expecting {ESAC, ID}
+"05-define-case.cl", line 8:30, Syntax error: mismatched input '=>' expecting {';', '<-'}
+Compilation halted

@@ -1,0 +1,8 @@
+"19-self_type.cl", line 5:24, Syntax error: mismatched input 'SELF_TYPE' expecting TYPE_ID
+"19-self_type.cl", line 9:13, Syntax error: extraneous input 'if' expecting {'}', ID}
+"19-self_type.cl", line 10:15, Syntax error: no viable alternative at input 'x<-'
+"19-self_type.cl", line 11:15, Syntax error: no viable alternative at input 'x<-'
+"19-self_type.cl", line 12:15, Syntax error: no viable alternative at input 'u<-'
+"19-self_type.cl", line 14:13, Syntax error: extraneous input '0' expecting {'}', ID}
+"19-self_type.cl", line 16:5, Syntax error: extraneous input '}' expecting ';'
+Compilation halted
