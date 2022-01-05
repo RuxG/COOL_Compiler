@@ -16,6 +16,8 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     // LinkedHashMap reține ordinea adăugării.
     protected Map<String, Symbol> symbols = new LinkedHashMap<>();
 
+    protected String returnType;
+
     public FunctionSymbol(String name, Scope parent) {
         super(name);
         this.parent = parent;
@@ -34,7 +36,13 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     }
 
     @Override
-    public Symbol lookup(String s) {
+    public boolean modify(Symbol sym) {
+        symbols.put(sym.name, sym);
+        return true;
+    }
+
+    @Override
+    public Symbol lookup(String s, String symbolCategory) {
         var sym = symbols.get(s);
 
         if (sym != null)
@@ -43,7 +51,7 @@ public class FunctionSymbol extends IdSymbol implements Scope {
         // Dacă nu găsim simbolul în domeniul de vizibilitate curent, îl căutăm
         // în domeniul de deasupra.
         if (parent != null)
-            return parent.lookup(s);
+            return parent.lookup(s, symbolCategory);
 
         return null;
     }
@@ -51,5 +59,17 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     @Override
     public Scope getParent() {
         return parent;
+    }
+
+    public void setParent(Scope parent) {
+        this.parent = parent;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
     }
 }

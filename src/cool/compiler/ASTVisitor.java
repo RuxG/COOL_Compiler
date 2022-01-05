@@ -55,4 +55,6 @@ public interface ASTVisitor<T>{
     T visit(ASTMember astMember);
 
     T visit(ASTCaseBranch astCaseBranch);
+
+    T visit(ASTType astType);
 }

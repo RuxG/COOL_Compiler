@@ -1,2 +1,2 @@
-"03-define-method.cl", line 14:5, Syntax error: extraneous input 'self' expecting {'}', ID}
+"03-define-method.cl", line 14:9, Syntax error: mismatched input '(' expecting ':'
 Compilation halted

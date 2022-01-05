@@ -484,3 +484,15 @@ class ASTIf extends ASTExpression {
         return visitor.visit(this);
     }
 }
+
+class ASTType extends ASTNode {
+    Token start;
+
+    ASTType(Token token) {
+        start = token;
+    }
+
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+}

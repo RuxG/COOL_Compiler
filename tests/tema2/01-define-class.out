@@ -1,5 +1,12 @@
 ANTLR Tool version 4.8 used for code generation does not match the current runtime version 4.9.2
 ANTLR Tool version 4.8 used for code generation does not match the current runtime version 4.9.2
-"01-define-class.cl", line 7:7, Syntax error: mismatched input 'SELF_TYPE' expecting TYPE_ID
-"01-define-class.cl", line 9:18, Syntax error: mismatched input 'SELF_TYPE' expecting TYPE_ID
+"01-define-class.cl", line 3:1, Semantic error: Class Int is redefined
+"01-define-class.cl", line 5:1, Semantic error: Class C has illegal parent Int
+"01-define-class.cl", line 7:1, Semantic error: Class has illegal name SELF_TYPE
+"01-define-class.cl", line 9:1, Semantic error: Class D has illegal parent SELF_TYPE
+"01-define-class.cl", line 11:1, Semantic error: Class D is redefined
+"01-define-class.cl", line 1:1, Semantic error: Class BB__ has undefined parent
+"01-define-class.cl", line 13:1, Semantic error: Inheritance cycle for class E
+"01-define-class.cl", line 14:1, Semantic error: Inheritance cycle for class F
+"01-define-class.cl", line 15:1, Semantic error: Inheritance cycle for class G
 Compilation halted

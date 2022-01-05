@@ -12,16 +12,16 @@ program
     :   (cls SEMI)+
     ;
 
-cls : CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (feature SEMI)* RBRACE
+cls : CLASS (type=TYPE_ID | type=SELF_TYPE) (INHERITS (parent=TYPE_ID | parent=SELF_TYPE))? LBRACE (feature SEMI)* RBRACE
 ;
 
-feature : ID LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE_ID LBRACE ex=expr RBRACE        # method
+feature : ID LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE_ID LBRACE ex=expr RBRACE                 # method
         | formal (ASSIGN ex=expr)?                                                                   # member
 ;
 
 
 formal_init : formal (ASSIGN ex=expr)? ;
-formal : id=ID TWO_POINTS (TYPE_ID | SELF_TYPE) ;
+formal : id=(ID | SELF) TWO_POINTS type=(TYPE_ID | SELF_TYPE) ;
 case_branch : ID TWO_POINTS TYPE_ID RESULT result=expr;
 
 expr :

@@ -133,11 +133,8 @@ public class Compiler {
             }
 
             @Override public ASTNode visitCls(CoolParser.ClsContext ctx) {
-                Token type = ctx.TYPE_ID(0).getSymbol();
-                Token parent_type = null;
-                if (ctx.TYPE_ID().size() > 1) {
-                    parent_type = ctx.TYPE_ID().get(1).getSymbol();
-                }
+                Token type = ctx.type;
+                Token parent_type = ctx.parent;
                 List<ASTFeature> features = new ArrayList<>();
                 for (var x : ctx.feature()) {
                     features.add((ASTFeature) visit(x));
@@ -167,17 +164,13 @@ public class Compiler {
                 ASTFormal formal = (ASTFormal)visit(ctx.formal());
 
 
-                return new ASTMember((ParserRuleContext) ctx, new ASTId((ParserRuleContext) ctx, ctx.formal().ID().getSymbol()), formal.type, assign, expr, ctx.start);
+                return new ASTMember((ParserRuleContext) ctx, new ASTId((ParserRuleContext) ctx, ctx.formal().id), formal.type, assign, expr, ctx.start);
             }
 
             @Override public ASTNode visitFormal(CoolParser.FormalContext ctx) {
                 Token type = null;
-                if (ctx.TYPE_ID() != null) {
-                    type = ctx.TYPE_ID().getSymbol();
-                } else if (ctx.SELF_TYPE() != null){
-                    type = ctx.SELF_TYPE().getSymbol();
-                }
-                ASTId id = new ASTId((ParserRuleContext) ctx, ctx.ID().getSymbol());
+                type = ctx.type;
+                ASTId id = new ASTId((ParserRuleContext) ctx, ctx.id);
                 return new ASTFormal((ParserRuleContext) ctx, id, type, ctx.start);
 
             }
@@ -192,7 +185,7 @@ public class Compiler {
                 ASTFormal formal = (ASTFormal)visit(ctx.formal());
 
 
-                return new ASTFormalInit((ParserRuleContext) ctx, new ASTId((ParserRuleContext) ctx, ctx.formal().ID().getSymbol()), formal.type, assign, expr, ctx.start);
+                return new ASTFormalInit((ParserRuleContext) ctx, new ASTId((ParserRuleContext) ctx, ctx.formal().id), formal.type, assign, expr, ctx.start);
             }
 
             @Override public ASTNode visitNew(CoolParser.NewContext ctx) { return new ASTNew((ParserRuleContext) ctx,ctx.NEW().getSymbol(), ctx.TYPE_ID().getSymbol(), ctx.start); }
@@ -602,6 +595,11 @@ public class Compiler {
                 return null;
             }
 
+            @Override
+            public Void visit(ASTType astType) {
+                return null;
+            }
+
             void printIndent(String str) {
                 for (int i = 0; i < indent; i++)
                     System.out.print(" ");
@@ -611,9 +609,15 @@ public class Compiler {
 
         };
 
-      //  ast.accept(printVisitor);
+       // ast.accept(printVisitor);
 
         SymbolTable.defineBasicClasses();
+
+        DefinitionPassVisitor defVisitor = new DefinitionPassVisitor();
+        ast.accept(defVisitor);
+
+        ResolutionPassVisitor resVisitor = new ResolutionPassVisitor();
+        ast.accept(resVisitor);
         
         // TODO Semantic analysis
         

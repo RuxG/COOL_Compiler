@@ -2,6 +2,11 @@ package cool.compiler;
 
 import cool.compiler.*;
 import cool.structures.Scope;
+import cool.structures.Symbol;
+import cool.structures.SymbolTable;
+import cool.structures.TypeSymbol;
+
+import java.lang.reflect.Type;
 
 public class ResolutionPassVisitor implements ASTVisitor<Void> {
     Scope current_scope = null;
@@ -36,9 +41,15 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTMultDiv astMultDiv) {
         return null;
     }
-
+    // String evaluate_type(ASTExpression) {
+    //
+    // }
     @Override
     public Void visit(ASTPlusMinus astPlusMinus) {
+        // left insanceof ASTString
+        // left si right sunt ASTInt, ASTId, ASTPlusMinus, ASTMultDiv
+
+
         return null;
     }
 
@@ -69,6 +80,30 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTClass astClass) {
+        TypeSymbol sym = (TypeSymbol) current_scope.lookup(astClass.type.getText(), "sym");
+        String parent_type = sym.getTypeParent();
+        if (parent_type != null) {
+
+            if (current_scope.lookup(parent_type, "sym") == null) {
+                SymbolTable.error(astClass.context, astClass.start, "Class " + astClass.type.getText() + " has undefined parent");
+            }
+
+            TypeSymbol parent_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+            while (parent_sym != null) {
+                if (parent_sym.getName().compareTo(sym.getName()) == 0) {
+                    SymbolTable.error(astClass.context, astClass.start, "Inheritance cycle for class " + astClass.type.getText());
+                    break;
+                }
+                parent_type = parent_sym.getTypeParent();
+                if (parent_type != null) {
+                    parent_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                } else {
+                    break;
+                }
+            }
+        }
+
+
         return null;
     }
 
@@ -124,6 +159,11 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTProg astProg) {
+        current_scope = SymbolTable.globals;
+
+        for (var cls: astProg.classes) {
+            cls.accept(this);
+        }
         return null;
     }
 
@@ -139,6 +179,11 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTCaseBranch astCaseBranch) {
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTType astType) {
         return null;
     }
 };

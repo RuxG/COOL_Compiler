@@ -24,14 +24,20 @@ public class DefaultScope implements Scope {
     }
 
     @Override
-    public Symbol lookup(String name) {
+    public boolean modify(Symbol sym) {
+        symbols.put(sym.name, sym);
+        return true;
+    }
+
+    @Override
+    public Symbol lookup(String name, String symbolCategory) {
         var sym = symbols.get(name);
         
         if (sym != null)
             return sym;
         
         if (parent != null)
-            return parent.lookup(name);
+            return parent.lookup(name, symbolCategory);
         
         return null;
     }
