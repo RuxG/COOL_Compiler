@@ -15,7 +15,7 @@ program
 cls : CLASS (type=TYPE_ID | type=SELF_TYPE) (INHERITS (parent=TYPE_ID | parent=SELF_TYPE))? LBRACE (feature SEMI)* RBRACE
 ;
 
-feature : ID LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE_ID LBRACE ex=expr RBRACE                 # method
+feature : id=(ID | SELF) LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE_ID LBRACE ex=expr RBRACE                 # method
         | formal (ASSIGN ex=expr)?                                                                   # member
 ;
 

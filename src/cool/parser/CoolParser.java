@@ -318,8 +318,8 @@ public class CoolParser extends Parser {
 		}
 	}
 	public static class MethodContext extends FeatureContext {
+		public Token id;
 		public ExprContext ex;
-		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
 		public TerminalNode LPAREN() { return getToken(CoolParser.LPAREN, 0); }
 		public TerminalNode RPAREN() { return getToken(CoolParser.RPAREN, 0); }
 		public TerminalNode TWO_POINTS() { return getToken(CoolParser.TWO_POINTS, 0); }
@@ -329,6 +329,8 @@ public class CoolParser extends Parser {
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
+		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
+		public TerminalNode SELF() { return getToken(CoolParser.SELF, 0); }
 		public List<FormalContext> formal() {
 			return getRuleContexts(FormalContext.class);
 		}
@@ -392,7 +394,16 @@ public class CoolParser extends Parser {
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(44);
-				match(ID);
+				((MethodContext)_localctx).id = _input.LT(1);
+				_la = _input.LA(1);
+				if ( !(_la==SELF || _la==ID) ) {
+					((MethodContext)_localctx).id = (Token)_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
 				setState(45);
 				match(LPAREN);
 				setState(54);
@@ -1672,7 +1683,7 @@ public class CoolParser extends Parser {
 		"\31\3\2\2\2\33!\3\2\2\2\34\37\7\n\2\2\35 \7\62\2\2\36 \7)\2\2\37\35\3"+
 		"\2\2\2\37\36\3\2\2\2 \"\3\2\2\2!\34\3\2\2\2!\"\3\2\2\2\"#\3\2\2\2#)\7"+
 		"\35\2\2$%\5\6\4\2%&\7\31\2\2&(\3\2\2\2\'$\3\2\2\2(+\3\2\2\2)\'\3\2\2\2"+
-		")*\3\2\2\2*,\3\2\2\2+)\3\2\2\2,-\7\36\2\2-\5\3\2\2\2./\7\63\2\2/8\7\33"+
+		")*\3\2\2\2*,\3\2\2\2+)\3\2\2\2,-\7\36\2\2-\5\3\2\2\2./\t\2\2\2/8\7\33"+
 		"\2\2\60\65\5\n\6\2\61\62\7\32\2\2\62\64\5\n\6\2\63\61\3\2\2\2\64\67\3"+
 		"\2\2\2\65\63\3\2\2\2\65\66\3\2\2\2\669\3\2\2\2\67\65\3\2\2\28\60\3\2\2"+
 		"\289\3\2\2\29:\3\2\2\2:;\7\34\2\2;<\7 \2\2<=\7\62\2\2=>\7\35\2\2>?\5\16"+

@@ -1,5 +1,7 @@
 package cool.structures;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ public class TypeSymbol extends Symbol implements Scope {
 
     Scope parent = null;
     String typeParent = null;
+
 
     public TypeSymbol(String name) {
         super(name);
@@ -49,6 +52,11 @@ public class TypeSymbol extends Symbol implements Scope {
             sym = methodsSymbols.get(str);
         } else if (symbolCategory.compareTo("memberSymbol") == 0) {
             sym = membersSymbols.get(str);
+        } else {
+            sym = methodsSymbols.get(str);
+            if (sym == null) {
+                sym = membersSymbols.get(str);
+            }
         }
 
         if (sym != null) {
@@ -78,4 +86,6 @@ public class TypeSymbol extends Symbol implements Scope {
     public void setTypeParent(String typeParent) {
         this.typeParent = typeParent;
     }
+
+
 }

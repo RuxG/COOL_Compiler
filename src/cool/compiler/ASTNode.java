@@ -1,5 +1,6 @@
 package cool.compiler;
 
+import cool.structures.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -28,6 +29,7 @@ abstract class ASTExpression extends ASTNode {
 
 // Identificatori
 class ASTId extends ASTExpression {
+    Symbol sym;
     ASTId(ParserRuleContext context, Token token) {
         super(context, token);
     }
@@ -73,6 +75,7 @@ class ASTAssign extends ASTExpression {
     ASTId id;
     Token assign;
     ASTExpression expr;
+
 
     ASTAssign(ParserRuleContext context, ASTId id,
               Token assign, ASTExpression expr,
@@ -195,6 +198,7 @@ class ASTMember extends ASTFeature {
     ASTExpression expr;
     ASTId id;
     Token type;
+
 
     ASTMember(ParserRuleContext context, ASTId id, Token type, Token assign, ASTExpression expr, Token start) {
         super(context, start);
@@ -408,10 +412,10 @@ abstract class ASTFeature extends ASTNode {
 
 class ASTMethod extends ASTFeature {
     ASTId id;
-    ParserRuleContext context;
     List<ASTFormal> formals;
     Token type;
     ASTExpression body;
+
 
     ASTMethod(ParserRuleContext context,  ASTId id, List<ASTFormal> formals, Token type, ASTExpression body, Token start) {
         super(context, start);
@@ -433,6 +437,7 @@ class ASTClass extends ASTNode {
     Token type;
     Token parent_type;
     List<ASTFeature> features;
+    Symbol sym;
 
     ASTClass(ParserRuleContext context, Token start, Token type, Token parent_type, List<ASTFeature> features) {
         this.start = start;

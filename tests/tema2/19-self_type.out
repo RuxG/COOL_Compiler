@@ -1,6 +1,5 @@
 "19-self_type.cl", line 5:24, Syntax error: mismatched input 'SELF_TYPE' expecting TYPE_ID
 "19-self_type.cl", line 9:13, Syntax error: extraneous input 'if' expecting {'}', 'self', ID}
-"19-self_type.cl", line 9:31, Syntax error: mismatched input 'else' expecting ':'
 "19-self_type.cl", line 10:15, Syntax error: no viable alternative at input 'x<-'
 "19-self_type.cl", line 11:15, Syntax error: no viable alternative at input 'x<-'
 "19-self_type.cl", line 12:15, Syntax error: no viable alternative at input 'u<-'

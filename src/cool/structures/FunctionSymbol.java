@@ -72,4 +72,8 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     public void setReturnType(String returnType) {
         this.returnType = returnType;
     }
+
+    public Map<String, Symbol> getSymbolTable() {
+        return symbols;
+    }
 }

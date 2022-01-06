@@ -1,9 +1,9 @@
 package cool.compiler;
 
 import cool.compiler.*;
-import cool.structures.Scope;
-import cool.structures.SymbolTable;
-import cool.structures.TypeSymbol;
+import cool.structures.*;
+
+import java.lang.reflect.Type;
 
 public class DefinitionPassVisitor implements ASTVisitor<Void> {
     Scope currentScope = null;
@@ -83,6 +83,36 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFormal astFormal) {
+        String id = astFormal.id.token.getText();
+        String type = astFormal.type.getText();
+
+        //System.out.println("DEFPASVISITOR FORMAL ID: " + id + " DEFPASSVISITOR type: " + type);
+
+        IdSymbol sym = new IdSymbol(id);
+
+        TypeSymbol class_scope = (TypeSymbol) currentScope.getParent();
+        if (!currentScope.add(sym)) {
+            SymbolTable.error(astFormal.context, astFormal.id.token, "Method " +
+                    ((FunctionSymbol) currentScope).getName() + " of class " + class_scope.getName() + " redefines formal parameter " +
+                    id);
+            return null;
+        }
+
+        if (id.compareTo("self") == 0) {
+            SymbolTable.error(astFormal.context, astFormal.id.token, "Method " +
+                    ((FunctionSymbol) currentScope).getName() + " of class " + class_scope.getName() + " has formal parameter with illegal name self");
+            return null;
+        }
+
+        if (type.compareTo("SELF_TYPE") == 0) {
+            SymbolTable.error(astFormal.context, astFormal.type, "Method " +
+                    ((FunctionSymbol) currentScope).getName() + " of class " + class_scope.getName() + " has formal parameter " +
+                    astFormal.id.token.getText() + " with illegal type SELF_TYPE");
+            return null;
+        }
+
+        sym.setContext(astFormal.id.ctx);
+        astFormal.id.sym = sym;
 
         return null;
     }
@@ -102,7 +132,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         if (astClass.parent_type != null) {
             String parent_type = astClass.parent_type.getText();
 
-            if ((parent_type.compareTo("Object") == 0) || (parent_type.compareTo("Int") == 0) ||
+            if ((parent_type.compareTo("Int") == 0) ||
                     (parent_type.compareTo("Bool") == 0) ||
                     (parent_type.compareTo("String") == 0) || (parent_type.compareTo("SELF_TYPE") == 0)) {
 
@@ -127,12 +157,33 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         currentScope = sym.getParent();
 
         SymbolTable.globals.modify(sym);
+        astClass.sym = sym;
 
         return null;
     }
 
     @Override
     public Void visit(ASTMethod astMethod) {
+        FunctionSymbol sym = new FunctionSymbol(astMethod.id.token.getText(), currentScope);
+        //System.out.println("DEFPASSVISITOR: " + astMethod.id.token.getText());
+        if (!currentScope.add(sym)) {
+                SymbolTable.error(astMethod.context, astMethod.id.token, "Class " + ((TypeSymbol)currentScope).getName() +
+                        " redefines method " + astMethod.id.token.getText());
+            return null;
+        }
+
+        TypeSymbol class_scope = (TypeSymbol) currentScope;
+        currentScope = sym;
+        for (ASTFormal f : astMethod.formals) {
+          //  System.out.println("DEFPASSVISITOR formal: " + f.id.token.getText());
+            f.accept(this);
+        }
+        currentScope = class_scope;
+        sym.setReturnType(astMethod.type.getText());
+
+        astMethod.id.sym = sym;
+        currentScope.modify(sym);
+
         return null;
     }
 
@@ -199,6 +250,21 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTMember astMember) {
+        Symbol sym = new IdSymbol(astMember.id.token.getText());
+        if (!currentScope.add(sym)) {
+            SymbolTable.error(astMember.context, astMember.id.token, "Class " + ((Symbol)currentScope).getName() + " redefines attribute " + astMember.id.token.getText());
+            return null;
+        }
+        if (astMember.id.token.getText().compareTo("self") == 0) {
+            SymbolTable.error(astMember.context, astMember.id.token, "Class " + ((Symbol)currentScope).getName() + " has attribute with illegal name self");
+            return null;
+        }
+        astMember.id.sym = sym;
+
+        if (astMember.expr != null) {
+            astMember.expr.accept(this);
+        }
+
         return null;
     }
 

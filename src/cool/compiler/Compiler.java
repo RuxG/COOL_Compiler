@@ -148,9 +148,9 @@ public class Compiler {
                     formals.add((ASTFormal) visit(ctx.formal(i)));
                 }
                 ASTExpression expr = (ASTExpression) visit(ctx.ex);
-                ASTId id = new ASTId((ParserRuleContext) ctx, ctx.ID().getSymbol());
+                ASTId id = new ASTId(ctx, ctx.id);
                 Token type = ctx.TYPE_ID().getSymbol();
-                return new ASTMethod((ParserRuleContext) ctx, id, formals, type, expr, ctx.start);
+                return new ASTMethod( ctx, id, formals, type, expr, ctx.start);
             }
 
             @Override public ASTNode visitMember(CoolParser.MemberContext ctx) {
