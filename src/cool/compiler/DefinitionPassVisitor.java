@@ -81,6 +81,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTAssign astAssign) {
         astAssign.id.accept(this);
         astAssign.expr.accept(this);
+
         return null;
     }
 
@@ -218,6 +219,8 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTWhile astWhile) {
+        astWhile.cond_expr.accept(this);
+        astWhile.body.accept(this);
         return null;
     }
 
@@ -255,11 +258,13 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTNew astNew) {
+
         return null;
     }
 
     @Override
     public Void visit(ASTIsVoid astIsVoid) {
+        astIsVoid.expr.accept(this);
         return null;
     }
 
@@ -293,6 +298,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTIf astIf) {
+
         return null;
     }
 

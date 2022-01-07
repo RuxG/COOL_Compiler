@@ -1,0 +1,2 @@
+"13-type-case.cl", line 9:14, Semantic error: Type Object of assigned expression is incompatible with declared type Int of identifier x
+Compilation halted

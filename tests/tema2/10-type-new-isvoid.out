@@ -1,15 +1,3 @@
-Exception in thread "main" java.lang.NullPointerException: Cannot invoke "cool.structures.TypeSymbol.getName()" because "type_sym" is null
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:483)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTNot.accept(ASTNode.java:377)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:542)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTMember.accept(ASTNode.java:212)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:243)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTClass.accept(ASTNode.java:455)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:500)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTProg.accept(ASTNode.java:472)
-	at cool.compiler.Compiler.main(Compiler.java:620)
-	at cool.tester.Tester2.main(Tester2.java:34)
+"10-type-new-isvoid.cl", line 11:14, Semantic error: Type A of assigned expression is incompatible with declared type B of identifier b
+"10-type-new-isvoid.cl", line 15:18, Semantic error: new is used with undefined type C
+Compilation halted

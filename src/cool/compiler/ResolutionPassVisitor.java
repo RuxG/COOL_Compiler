@@ -13,7 +13,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTId astId) {
-        Symbol sym = current_scope.lookup(astId.token.getText(), "");
+        Symbol sym = current_scope.lookup(astId.token.getText(), "memberSymbol");
         if (sym == null) {
             SymbolTable.error(astId.ctx, astId.token, "Undefined identifier " + astId.token.getText());
             return null;
@@ -119,7 +119,61 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTAssign astAssign) {
-        return null;
+        if (astAssign.id.token.getText().compareTo("self") == 0) {
+            SymbolTable.error(astAssign.ctx, astAssign.id.token, "Cannot assign to self");
+            return null;
+        }
+        TypeSymbol id_type = astAssign.id.accept(this);
+
+
+
+        // x metoda, x membru
+        // x <- 2
+
+        // x metoda
+        // x <- 2
+        // x + 2
+
+        // x membru
+        // x <- 2
+
+
+        Symbol id_sym = current_scope.lookup(astAssign.id.token.getText(), "");
+        astAssign.id.sym = id_sym;
+        astAssign.id.sym.setType(id_type);
+
+        TypeSymbol init_type = astAssign.expr.accept(this);
+        if (init_type == null) {
+            return id_type;
+        }
+
+        boolean compatible_type = false;
+        if (id_type.getName().compareTo(init_type.getName()) != 0) {
+            String parent_type = init_type.getTypeParent();
+            if (parent_type != null) {
+                TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                while (parent_type_sym != null) {
+                    if (parent_type_sym.getName().compareTo(id_type.getName()) == 0) {
+                        compatible_type = true;
+                        break;
+                    }
+                    parent_type = parent_type_sym.getTypeParent();
+                    parent_type_sym = null;
+                    if (parent_type != null) {
+                        parent_type_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                    }
+                }
+            }
+        } else {
+            compatible_type = true;
+        }
+        if (!compatible_type) {
+            SymbolTable.error(astAssign.ctx, astAssign.expr.token, "Type " + init_type.getName() +
+                    " of assigned expression is incompatible with declared type " +
+                    id_type.getName() + " of identifier " + astAssign.id.token.getText());
+            return null;
+        }
+        return id_type.getType();
     }
 
     @Override
@@ -355,7 +409,14 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTWhile astWhile) {
-        return null;
+        TypeSymbol cond_type = astWhile.cond_expr.accept(this);
+        if (cond_type.getName().compareTo("Bool") != 0) {
+            SymbolTable.error(astWhile.ctx, astWhile.cond_expr.token, "While condition has type " +
+                    cond_type.getName() + " instead of Bool");
+            return TypeSymbol.OBJECT;
+        }
+        astWhile.body.accept(this);
+        return TypeSymbol.OBJECT;
     }
 
     @Override
@@ -457,12 +518,18 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTNew astNew) {
-        return null;
+        TypeSymbol type_sym = (TypeSymbol) SymbolTable.globals.lookup(astNew.type.getText(), "");
+        if (type_sym == null) {
+            SymbolTable.error(astNew.ctx, astNew.type, "new is used with undefined type " + astNew.type.getText());
+            return null;
+        }
+        return type_sym;
     }
 
     @Override
     public TypeSymbol visit(ASTIsVoid astIsVoid) {
-        return null;
+        TypeSymbol type = astIsVoid.expr.accept(this);
+        return TypeSymbol.BOOL;
     }
 
 

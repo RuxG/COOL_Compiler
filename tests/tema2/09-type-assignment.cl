@@ -3,7 +3,7 @@ class A {
     y : Int;
     b : B;
     c : C;
-    
+
     f() : Object {
         b <- b
     };
