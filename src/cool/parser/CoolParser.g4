@@ -22,7 +22,7 @@ feature : id=(ID | SELF) LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE
 
 formal_init : formal (ASSIGN ex=expr)? ;
 formal : id=(ID | SELF) TWO_POINTS type=(TYPE_ID | SELF_TYPE) ;
-case_branch : ID TWO_POINTS TYPE_ID RESULT result=expr;
+case_branch : id=(ID | SELF) TWO_POINTS type=(TYPE_ID | SELF_TYPE) RESULT result=expr;
 
 expr :
   ex=expr (AROND TYPE_ID)? POINT ID LPAREN (expr (COMMA expr)*)? RPAREN                              # call_explicit
@@ -34,12 +34,13 @@ expr :
  | CASE ex=expr OF (case_branch SEMI)+ ESAC                                                          # case
  | NEW TYPE_ID                                                                                       # new
  | ISVOID ex=expr                                                                                    # isvoid
+ | COMPLEMENT ex=expr                                                                                # complement
  | left=expr op=(MULT | DIV) right=expr                                                              # multDiv
  | left=expr op=(PLUS | MINUS) right=expr                                                            # plusMinus
  | left=expr op=(LT | LE | EQUAL) right=expr                                                         # relational
- | ID ASSIGN ex=expr                                                                                 # assign
- | COMPLEMENT ex=expr                                                                                # complement
- | NOT ex=expr                                                                                       # not
+  | NOT ex=expr                                                                                       # not
+ | id=(ID | SELF) ASSIGN ex=expr                                                                                 # assign
+
  | LPAREN ex=expr RPAREN                                                                             # paren
  | SELF                                                                                              # self
  | ID                                                                                                # id

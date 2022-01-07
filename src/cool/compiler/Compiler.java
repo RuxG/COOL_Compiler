@@ -206,7 +206,7 @@ public class Compiler {
                 return new ASTWhile((ParserRuleContext) ctx,(ASTExpression) visit(ctx.cond), (ASTExpression) visit(ctx.body), ctx.start, ctx.WHILE().getSymbol());
             }
 
-            @Override public ASTNode visitInt(CoolParser.IntContext ctx) { return new ASTString((ParserRuleContext) ctx,ctx.INT().getSymbol()); }
+            @Override public ASTNode visitInt(CoolParser.IntContext ctx) { return new ASTInt((ParserRuleContext) ctx,ctx.INT().getSymbol()); }
 
             @Override public ASTNode visitCall_explicit(CoolParser.Call_explicitContext ctx) {
                 Token type = null;
@@ -276,8 +276,8 @@ public class Compiler {
             }
 
             @Override public ASTNode visitCase_branch(CoolParser.Case_branchContext ctx) {
-                ASTId id = new ASTId((ParserRuleContext) ctx,ctx.ID().getSymbol());
-                Token type = ctx.TYPE_ID().getSymbol();
+                ASTId id = new ASTId((ParserRuleContext) ctx,ctx.id);
+                Token type = ctx.type;
                 ASTExpression expr = (ASTExpression) visit(ctx.result);
                 return new ASTCaseBranch((ParserRuleContext) ctx, ctx.start, id, type, expr);
             }
@@ -290,7 +290,7 @@ public class Compiler {
                 return new ASTCase((ParserRuleContext) ctx, ctx.start, branches, (ASTExpression) visit(ctx.ex), ctx.CASE().getSymbol());
             }
 
-            @Override public ASTNode visitAssign(CoolParser.AssignContext ctx) { return new ASTAssign((ParserRuleContext) ctx,new ASTId((ParserRuleContext) ctx, ctx.ID().getSymbol()),  ctx.ASSIGN().getSymbol(), (ASTExpression) visit(ctx.ex), ctx.start); }
+            @Override public ASTNode visitAssign(CoolParser.AssignContext ctx) { return new ASTAssign((ParserRuleContext) ctx,new ASTId((ParserRuleContext) ctx, ctx.id),  ctx.ASSIGN().getSymbol(), (ASTExpression) visit(ctx.ex), ctx.start); }
 
 
         };

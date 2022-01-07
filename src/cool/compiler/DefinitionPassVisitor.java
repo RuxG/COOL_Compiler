@@ -10,6 +10,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTId astId) {
+
         return null;
     }
 
@@ -35,13 +36,15 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTMultDiv astMultDiv) {
+        astMultDiv.left_expr.accept(this);
+        astMultDiv.right_expr.accept(this);
         return null;
     }
 
     @Override
     public Void visit(ASTPlusMinus astPlusMinus) {
-        ASTExpression left;
-        ASTExpression right;
+        astPlusMinus.left_expr.accept(this);
+        astPlusMinus.right_expr.accept(this);
       //  left = (x + y - z);
       //  right = (a + b - c);
         // (x + y - z) + (a + b - c)
@@ -68,11 +71,16 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTRelational astRelational) {
+        astRelational.left_expr.accept(this);
+        astRelational.right_expr.accept(this);
+
         return null;
     }
 
     @Override
     public Void visit(ASTAssign astAssign) {
+        astAssign.id.accept(this);
+        astAssign.expr.accept(this);
         return null;
     }
 
@@ -119,6 +127,26 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFormalInit astFormalInit) {
+        String id = astFormalInit.id.token.getText();
+
+        IdSymbol sym = new IdSymbol(id);
+
+        if (!currentScope.add(sym)) {
+            currentScope.modify(sym);
+        }
+
+        if (id.compareTo("self") == 0) {
+            SymbolTable.error(astFormalInit.ctx, astFormalInit.id.token, "Let variable has illegal name self");
+            return null;
+        }
+
+        sym.setContext(astFormalInit.id.ctx);
+        astFormalInit.id.sym = sym;
+
+        if (astFormalInit.expr != null) {
+            astFormalInit.expr.accept(this);
+        }
+
         return null;
     }
 
@@ -178,6 +206,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
           //  System.out.println("DEFPASSVISITOR formal: " + f.id.token.getText());
             f.accept(this);
         }
+        astMethod.body.accept(this);
         currentScope = class_scope;
         sym.setReturnType(astMethod.type.getText());
 
@@ -199,11 +228,28 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTLet astLet) {
+        FunctionSymbol let_scope = new FunctionSymbol("", currentScope);
+        currentScope = let_scope;
+        for (ASTFormalInit f : astLet.formals) {
+            f.accept(this);
+        }
+        astLet.ex.accept(this);
+        currentScope = currentScope.getParent();
+        astLet.sym = let_scope;
         return null;
     }
 
     @Override
     public Void visit(ASTCase astCase) {
+
+        astCase.expr.accept(this);
+
+        for (ASTCaseBranch c : astCase.branches) {
+            c.accept(this);
+        }
+
+        astCase.expr.accept(this);
+
         return null;
     }
 
@@ -219,11 +265,13 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTComplement astComplement) {
+        astComplement.expr.accept(this);
         return null;
     }
 
     @Override
     public Void visit(ASTNot astNot) {
+        astNot.expr.accept(this);
         return null;
     }
 
@@ -270,6 +318,25 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTCaseBranch astCaseBranch) {
+
+        if (astCaseBranch.id.token.getText().compareTo("self") == 0) {
+            SymbolTable.error(astCaseBranch.ctx, astCaseBranch.id.token, "Case variable has illegal name self");
+            return null;
+        }
+
+        CaseSymbol case_scope = new CaseSymbol("", currentScope);
+        currentScope = case_scope;
+
+        IdSymbol sym = new IdSymbol(astCaseBranch.id.token.getText());
+        currentScope.add(sym);
+
+        astCaseBranch.results.accept(this);
+
+        currentScope = currentScope.getParent();
+
+        astCaseBranch.id.sym = sym;
+
+        astCaseBranch.sym = case_scope;
         return null;
     }
 

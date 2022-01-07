@@ -23,7 +23,7 @@ public class CoolParser extends Parser {
 		LET=10, IN=11, ISVOID=12, WHILE=13, LOOP=14, POOL=15, CASE=16, OF=17, 
 		ESAC=18, NOT=19, AROND=20, COMPLEMENT=21, RESULT=22, SEMI=23, COMMA=24, 
 		LPAREN=25, RPAREN=26, LBRACE=27, RBRACE=28, POINT=29, TWO_POINTS=30, PLUS=31, 
-		MINUS=32, MULT=33, DIV=34, ASSIGN=35, EQUAL=36, LT=37, LE=38, SELF_TYPE=39, 
+		MINUS=32, MULT=33, DIV=34, ASSIGN=35, EQUAL=36, LE=37, LT=38, SELF_TYPE=39, 
 		SELF=40, LINE_COMMENT=41, BLOCK_COMMENT=42, INT=43, BOOL=44, TRUE=45, 
 		FALSE=46, STRING=47, TYPE_ID=48, ID=49, INVALID=50;
 	public static final int
@@ -42,7 +42,7 @@ public class CoolParser extends Parser {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, "'@'", "'~'", "'=>'", 
 			"';'", "','", "'('", "')'", "'{'", "'}'", "'.'", "':'", "'+'", "'-'", 
-			"'*'", "'/'", "'<-'", "'='", "'<'", "'<='", "'SELF_TYPE'", "'self'"
+			"'*'", "'/'", "'<-'", "'='", "'<='", "'<'", "'SELF_TYPE'", "'self'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -52,7 +52,7 @@ public class CoolParser extends Parser {
 			"NEW", "LET", "IN", "ISVOID", "WHILE", "LOOP", "POOL", "CASE", "OF", 
 			"ESAC", "NOT", "AROND", "COMPLEMENT", "RESULT", "SEMI", "COMMA", "LPAREN", 
 			"RPAREN", "LBRACE", "RBRACE", "POINT", "TWO_POINTS", "PLUS", "MINUS", 
-			"MULT", "DIV", "ASSIGN", "EQUAL", "LT", "LE", "SELF_TYPE", "SELF", "LINE_COMMENT", 
+			"MULT", "DIV", "ASSIGN", "EQUAL", "LE", "LT", "SELF_TYPE", "SELF", "LINE_COMMENT", 
 			"BLOCK_COMMENT", "INT", "BOOL", "TRUE", "FALSE", "STRING", "TYPE_ID", 
 			"ID", "INVALID"
 		};
@@ -613,14 +613,18 @@ public class CoolParser extends Parser {
 	}
 
 	public static class Case_branchContext extends ParserRuleContext {
+		public Token id;
+		public Token type;
 		public ExprContext result;
-		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
 		public TerminalNode TWO_POINTS() { return getToken(CoolParser.TWO_POINTS, 0); }
-		public TerminalNode TYPE_ID() { return getToken(CoolParser.TYPE_ID, 0); }
 		public TerminalNode RESULT() { return getToken(CoolParser.RESULT, 0); }
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
+		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
+		public TerminalNode SELF() { return getToken(CoolParser.SELF, 0); }
+		public TerminalNode TYPE_ID() { return getToken(CoolParser.TYPE_ID, 0); }
+		public TerminalNode SELF_TYPE() { return getToken(CoolParser.SELF_TYPE, 0); }
 		public Case_branchContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -643,15 +647,34 @@ public class CoolParser extends Parser {
 	public final Case_branchContext case_branch() throws RecognitionException {
 		Case_branchContext _localctx = new Case_branchContext(_ctx, getState());
 		enterRule(_localctx, 10, RULE_case_branch);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(79);
-			match(ID);
+			((Case_branchContext)_localctx).id = _input.LT(1);
+			_la = _input.LA(1);
+			if ( !(_la==SELF || _la==ID) ) {
+				((Case_branchContext)_localctx).id = (Token)_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
 			setState(80);
 			match(TWO_POINTS);
 			setState(81);
-			match(TYPE_ID);
+			((Case_branchContext)_localctx).type = _input.LT(1);
+			_la = _input.LA(1);
+			if ( !(_la==SELF_TYPE || _la==TYPE_ID) ) {
+				((Case_branchContext)_localctx).type = (Token)_errHandler.recoverInline(this);
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
+				consume();
+			}
 			setState(82);
 			match(RESULT);
 			setState(83);
@@ -1162,12 +1185,14 @@ public class CoolParser extends Parser {
 		}
 	}
 	public static class AssignContext extends ExprContext {
+		public Token id;
 		public ExprContext ex;
-		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
 		public TerminalNode ASSIGN() { return getToken(CoolParser.ASSIGN, 0); }
 		public ExprContext expr() {
 			return getRuleContext(ExprContext.class,0);
 		}
+		public TerminalNode ID() { return getToken(CoolParser.ID, 0); }
+		public TerminalNode SELF() { return getToken(CoolParser.SELF, 0); }
 		public AssignContext(ExprContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -1365,7 +1390,7 @@ public class CoolParser extends Parser {
 					setState(143); 
 					_errHandler.sync(this);
 					_la = _input.LA(1);
-				} while ( _la==ID );
+				} while ( _la==SELF || _la==ID );
 				setState(145);
 				match(ESAC);
 				}
@@ -1394,37 +1419,46 @@ public class CoolParser extends Parser {
 				break;
 			case 9:
 				{
-				_localctx = new AssignContext(_localctx);
+				_localctx = new ComplementContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(151);
-				match(ID);
+				match(COMPLEMENT);
 				setState(152);
-				match(ASSIGN);
-				setState(153);
-				((AssignContext)_localctx).ex = expr(9);
+				((ComplementContext)_localctx).ex = expr(12);
 				}
 				break;
 			case 10:
 				{
-				_localctx = new ComplementContext(_localctx);
+				_localctx = new NotContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
+				setState(153);
+				match(NOT);
 				setState(154);
-				match(COMPLEMENT);
-				setState(155);
-				((ComplementContext)_localctx).ex = expr(8);
+				((NotContext)_localctx).ex = expr(8);
 				}
 				break;
 			case 11:
 				{
-				_localctx = new NotContext(_localctx);
+				_localctx = new AssignContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
+				setState(155);
+				((AssignContext)_localctx).id = _input.LT(1);
+				_la = _input.LA(1);
+				if ( !(_la==SELF || _la==ID) ) {
+					((AssignContext)_localctx).id = (Token)_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
 				setState(156);
-				match(NOT);
+				match(ASSIGN);
 				setState(157);
-				((NotContext)_localctx).ex = expr(7);
+				((AssignContext)_localctx).ex = expr(7);
 				}
 				break;
 			case 12:
@@ -1504,7 +1538,7 @@ public class CoolParser extends Parser {
 						((MultDivContext)_localctx).left = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expr);
 						setState(169);
-						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
+						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
 						setState(170);
 						((MultDivContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
@@ -1517,7 +1551,7 @@ public class CoolParser extends Parser {
 							consume();
 						}
 						setState(171);
-						((MultDivContext)_localctx).right = expr(13);
+						((MultDivContext)_localctx).right = expr(12);
 						}
 						break;
 					case 2:
@@ -1526,7 +1560,7 @@ public class CoolParser extends Parser {
 						((PlusMinusContext)_localctx).left = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expr);
 						setState(172);
-						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
+						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
 						setState(173);
 						((PlusMinusContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
@@ -1539,7 +1573,7 @@ public class CoolParser extends Parser {
 							consume();
 						}
 						setState(174);
-						((PlusMinusContext)_localctx).right = expr(12);
+						((PlusMinusContext)_localctx).right = expr(11);
 						}
 						break;
 					case 3:
@@ -1548,11 +1582,11 @@ public class CoolParser extends Parser {
 						((RelationalContext)_localctx).left = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expr);
 						setState(175);
-						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
+						if (!(precpred(_ctx, 9))) throw new FailedPredicateException(this, "precpred(_ctx, 9)");
 						setState(176);
 						((RelationalContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
-						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQUAL) | (1L << LT) | (1L << LE))) != 0)) ) {
+						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQUAL) | (1L << LE) | (1L << LT))) != 0)) ) {
 							((RelationalContext)_localctx).op = (Token)_errHandler.recoverInline(this);
 						}
 						else {
@@ -1561,7 +1595,7 @@ public class CoolParser extends Parser {
 							consume();
 						}
 						setState(177);
-						((RelationalContext)_localctx).right = expr(11);
+						((RelationalContext)_localctx).right = expr(10);
 						}
 						break;
 					case 4:
@@ -1649,11 +1683,11 @@ public class CoolParser extends Parser {
 	private boolean expr_sempred(ExprContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 12);
-		case 1:
 			return precpred(_ctx, 11);
-		case 2:
+		case 1:
 			return precpred(_ctx, 10);
+		case 2:
+			return precpred(_ctx, 9);
 		case 3:
 			return precpred(_ctx, 21);
 		}
@@ -1690,15 +1724,15 @@ public class CoolParser extends Parser {
 		"\b\2?@\7\36\2\2@G\3\2\2\2AD\5\n\6\2BC\7%\2\2CE\5\16\b\2DB\3\2\2\2DE\3"+
 		"\2\2\2EG\3\2\2\2F.\3\2\2\2FA\3\2\2\2G\7\3\2\2\2HK\5\n\6\2IJ\7%\2\2JL\5"+
 		"\16\b\2KI\3\2\2\2KL\3\2\2\2L\t\3\2\2\2MN\t\2\2\2NO\7 \2\2OP\t\3\2\2P\13"+
-		"\3\2\2\2QR\7\63\2\2RS\7 \2\2ST\7\62\2\2TU\7\30\2\2UV\5\16\b\2V\r\3\2\2"+
-		"\2WX\b\b\1\2XY\7\63\2\2Yb\7\33\2\2Z_\5\16\b\2[\\\7\32\2\2\\^\5\16\b\2"+
-		"][\3\2\2\2^a\3\2\2\2_]\3\2\2\2_`\3\2\2\2`c\3\2\2\2a_\3\2\2\2bZ\3\2\2\2"+
-		"bc\3\2\2\2cd\3\2\2\2d\u00aa\7\34\2\2ef\7\5\2\2fg\5\16\b\2gh\7\6\2\2hi"+
-		"\5\16\b\2ij\7\7\2\2jk\5\16\b\2kl\7\b\2\2l\u00aa\3\2\2\2mn\7\17\2\2no\5"+
-		"\16\b\2op\7\20\2\2pq\5\16\b\2qr\7\21\2\2r\u00aa\3\2\2\2sw\7\35\2\2tu\5"+
-		"\16\b\2uv\7\31\2\2vx\3\2\2\2wt\3\2\2\2xy\3\2\2\2yw\3\2\2\2yz\3\2\2\2z"+
-		"{\3\2\2\2{|\7\36\2\2|\u00aa\3\2\2\2}~\7\f\2\2~\u0083\5\b\5\2\177\u0080"+
-		"\7\32\2\2\u0080\u0082\5\b\5\2\u0081\177\3\2\2\2\u0082\u0085\3\2\2\2\u0083"+
+		"\3\2\2\2QR\t\2\2\2RS\7 \2\2ST\t\3\2\2TU\7\30\2\2UV\5\16\b\2V\r\3\2\2\2"+
+		"WX\b\b\1\2XY\7\63\2\2Yb\7\33\2\2Z_\5\16\b\2[\\\7\32\2\2\\^\5\16\b\2]["+
+		"\3\2\2\2^a\3\2\2\2_]\3\2\2\2_`\3\2\2\2`c\3\2\2\2a_\3\2\2\2bZ\3\2\2\2b"+
+		"c\3\2\2\2cd\3\2\2\2d\u00aa\7\34\2\2ef\7\5\2\2fg\5\16\b\2gh\7\6\2\2hi\5"+
+		"\16\b\2ij\7\7\2\2jk\5\16\b\2kl\7\b\2\2l\u00aa\3\2\2\2mn\7\17\2\2no\5\16"+
+		"\b\2op\7\20\2\2pq\5\16\b\2qr\7\21\2\2r\u00aa\3\2\2\2sw\7\35\2\2tu\5\16"+
+		"\b\2uv\7\31\2\2vx\3\2\2\2wt\3\2\2\2xy\3\2\2\2yw\3\2\2\2yz\3\2\2\2z{\3"+
+		"\2\2\2{|\7\36\2\2|\u00aa\3\2\2\2}~\7\f\2\2~\u0083\5\b\5\2\177\u0080\7"+
+		"\32\2\2\u0080\u0082\5\b\5\2\u0081\177\3\2\2\2\u0082\u0085\3\2\2\2\u0083"+
 		"\u0081\3\2\2\2\u0083\u0084\3\2\2\2\u0084\u0086\3\2\2\2\u0085\u0083\3\2"+
 		"\2\2\u0086\u0087\7\r\2\2\u0087\u0088\5\16\b\22\u0088\u00aa\3\2\2\2\u0089"+
 		"\u008a\7\22\2\2\u008a\u008b\5\16\b\2\u008b\u008f\7\23\2\2\u008c\u008d"+
@@ -1706,18 +1740,18 @@ public class CoolParser extends Parser {
 		"\u0090\u0091\3\2\2\2\u0091\u008f\3\2\2\2\u0091\u0092\3\2\2\2\u0092\u0093"+
 		"\3\2\2\2\u0093\u0094\7\24\2\2\u0094\u00aa\3\2\2\2\u0095\u0096\7\13\2\2"+
 		"\u0096\u00aa\7\62\2\2\u0097\u0098\7\16\2\2\u0098\u00aa\5\16\b\17\u0099"+
-		"\u009a\7\63\2\2\u009a\u009b\7%\2\2\u009b\u00aa\5\16\b\13\u009c\u009d\7"+
-		"\27\2\2\u009d\u00aa\5\16\b\n\u009e\u009f\7\25\2\2\u009f\u00aa\5\16\b\t"+
+		"\u009a\7\27\2\2\u009a\u00aa\5\16\b\16\u009b\u009c\7\25\2\2\u009c\u00aa"+
+		"\5\16\b\n\u009d\u009e\t\2\2\2\u009e\u009f\7%\2\2\u009f\u00aa\5\16\b\t"+
 		"\u00a0\u00a1\7\33\2\2\u00a1\u00a2\5\16\b\2\u00a2\u00a3\7\34\2\2\u00a3"+
 		"\u00aa\3\2\2\2\u00a4\u00aa\7*\2\2\u00a5\u00aa\7\63\2\2\u00a6\u00aa\7-"+
 		"\2\2\u00a7\u00aa\7.\2\2\u00a8\u00aa\7\61\2\2\u00a9W\3\2\2\2\u00a9e\3\2"+
 		"\2\2\u00a9m\3\2\2\2\u00a9s\3\2\2\2\u00a9}\3\2\2\2\u00a9\u0089\3\2\2\2"+
-		"\u00a9\u0095\3\2\2\2\u00a9\u0097\3\2\2\2\u00a9\u0099\3\2\2\2\u00a9\u009c"+
-		"\3\2\2\2\u00a9\u009e\3\2\2\2\u00a9\u00a0\3\2\2\2\u00a9\u00a4\3\2\2\2\u00a9"+
+		"\u00a9\u0095\3\2\2\2\u00a9\u0097\3\2\2\2\u00a9\u0099\3\2\2\2\u00a9\u009b"+
+		"\3\2\2\2\u00a9\u009d\3\2\2\2\u00a9\u00a0\3\2\2\2\u00a9\u00a4\3\2\2\2\u00a9"+
 		"\u00a5\3\2\2\2\u00a9\u00a6\3\2\2\2\u00a9\u00a7\3\2\2\2\u00a9\u00a8\3\2"+
-		"\2\2\u00aa\u00c9\3\2\2\2\u00ab\u00ac\f\16\2\2\u00ac\u00ad\t\4\2\2\u00ad"+
-		"\u00c8\5\16\b\17\u00ae\u00af\f\r\2\2\u00af\u00b0\t\5\2\2\u00b0\u00c8\5"+
-		"\16\b\16\u00b1\u00b2\f\f\2\2\u00b2\u00b3\t\6\2\2\u00b3\u00c8\5\16\b\r"+
+		"\2\2\u00aa\u00c9\3\2\2\2\u00ab\u00ac\f\r\2\2\u00ac\u00ad\t\4\2\2\u00ad"+
+		"\u00c8\5\16\b\16\u00ae\u00af\f\f\2\2\u00af\u00b0\t\5\2\2\u00b0\u00c8\5"+
+		"\16\b\r\u00b1\u00b2\f\13\2\2\u00b2\u00b3\t\6\2\2\u00b3\u00c8\5\16\b\f"+
 		"\u00b4\u00b7\f\27\2\2\u00b5\u00b6\7\26\2\2\u00b6\u00b8\7\62\2\2\u00b7"+
 		"\u00b5\3\2\2\2\u00b7\u00b8\3\2\2\2\u00b8\u00b9\3\2\2\2\u00b9\u00ba\7\37"+
 		"\2\2\u00ba\u00bb\7\63\2\2\u00bb\u00c4\7\33\2\2\u00bc\u00c1\5\16\b\2\u00bd"+

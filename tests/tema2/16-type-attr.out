@@ -1,0 +1,2 @@
+"16-type-attr.cl", line 4:16, Semantic error: Type Bool of initialization expression of attribute z is incompatible with declared type Object
+Compilation halted

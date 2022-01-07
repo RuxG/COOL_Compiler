@@ -214,6 +214,7 @@ class ASTMember extends ASTFeature {
 }
 
 class ASTFormalInit extends ASTExpression {
+
     Token assign;
     ASTExpression expr;
     ASTId id;
@@ -236,6 +237,7 @@ class ASTCaseBranch extends ASTExpression {
     ASTId id;
     Token type;
     ASTExpression results;
+    Symbol sym;
 
     ASTCaseBranch(ParserRuleContext context, Token start, ASTId id, Token type,  ASTExpression results) {
         super(context, start);
@@ -283,6 +285,8 @@ class ASTLet extends ASTExpression {
     List<ASTFormalInit> formals;
     ASTExpression ex;
     Token let;
+    Symbol sym;
+
 
     ASTLet(ParserRuleContext context, Token token, List<ASTFormalInit> formals, ASTExpression expr, Token let) {
         super(context, token);
@@ -300,6 +304,7 @@ class ASTCase extends ASTExpression {
     ASTExpression expr;
     List<ASTCaseBranch> branches;
     Token CASE;
+
 
     ASTCase(ParserRuleContext context, Token token, List<ASTCaseBranch> branches, ASTExpression expr, Token CASE) {
         super(context, token);

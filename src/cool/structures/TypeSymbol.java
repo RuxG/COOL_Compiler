@@ -19,7 +19,6 @@ public class TypeSymbol extends Symbol implements Scope {
     Scope parent = null;
     String typeParent = null;
 
-
     public TypeSymbol(String name) {
         super(name);
     }

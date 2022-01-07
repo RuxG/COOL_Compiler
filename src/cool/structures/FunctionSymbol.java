@@ -76,4 +76,8 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     public Map<String, Symbol> getSymbolTable() {
         return symbols;
     }
+
+    public void setSymbolTable(Map<String, Symbol> symbol_table) {
+        this.symbols = symbol_table;
+    }
 }

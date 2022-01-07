@@ -34,8 +34,8 @@ MULT=33
 DIV=34
 ASSIGN=35
 EQUAL=36
-LT=37
-LE=38
+LE=37
+LT=38
 SELF_TYPE=39
 SELF=40
 LINE_COMMENT=41
@@ -65,7 +65,7 @@ INVALID=50
 '/'=34
 '<-'=35
 '='=36
-'<'=37
-'<='=38
+'<='=37
+'<'=38
 'SELF_TYPE'=39
 'self'=40

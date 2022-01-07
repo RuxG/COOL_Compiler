@@ -5,9 +5,7 @@ import cool.structures.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
     Scope current_scope = null;
@@ -15,26 +13,27 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTId astId) {
-        Symbol sym = current_scope.lookup(astId.token.getText(), "type");
+        Symbol sym = current_scope.lookup(astId.token.getText(), "");
         if (sym == null) {
             SymbolTable.error(astId.ctx, astId.token, "Undefined identifier " + astId.token.getText());
+            return null;
         }
-        return null;
+        TypeSymbol type_sym = sym.getType();
+        return type_sym;
     }
 
     @Override
     public TypeSymbol visit(ASTInt astInt) {
-        return null;
+        return TypeSymbol.INT;
     }
-
     @Override
     public TypeSymbol visit(ASTBool astBool) {
-        return null;
+        return TypeSymbol.BOOL;
     }
 
     @Override
     public TypeSymbol visit(ASTString astString) {
-        return null;
+        return TypeSymbol.STRING;
     }
 
     @Override
@@ -44,23 +43,78 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTMultDiv astMultDiv) {
-        return null;
+        TypeSymbol left_type_sym = astMultDiv.left_expr.accept(this);
+        TypeSymbol right_type_sym = astMultDiv.right_expr.accept(this);
+
+        boolean error = false;
+        if (right_type_sym != null && right_type_sym.getName().compareTo("Int") != 0) {
+            SymbolTable.error(astMultDiv.ctx, astMultDiv.right_expr.token, "Operand of " +
+                    astMultDiv.type.getText() +  " has type " + right_type_sym.getName() +  " instead of Int");
+            error = true;
+        }
+        if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
+            SymbolTable.error(astMultDiv.ctx, astMultDiv.left_expr.token, "Operand of " +
+                    astMultDiv.type.getText() +  " has type " + left_type_sym.getName() +  " instead of Int");
+            error = true;
+        }
+
+        if (error) return null;
+        return TypeSymbol.INT;
     }
     // String evaluate_type(ASTExpression) {
     //
     // }
     @Override
     public TypeSymbol visit(ASTPlusMinus astPlusMinus) {
-        // left insanceof ASTString
-        // left si right sunt ASTInt, ASTId, ASTPlusMinus, ASTMultDiv
+        TypeSymbol left_type_sym = astPlusMinus.left_expr.accept(this);
+        TypeSymbol right_type_sym = astPlusMinus.right_expr.accept(this);
 
+        boolean error = false;
+        if (right_type_sym != null && right_type_sym.getName().compareTo("Int") != 0) {
+            SymbolTable.error(astPlusMinus.ctx, astPlusMinus.right_expr.token, "Operand of " +
+                    astPlusMinus.op.getText() + " has type " + right_type_sym.getName() + " instead of Int");
+            error = true;
+        }
+        if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
+            SymbolTable.error(astPlusMinus.ctx, astPlusMinus.left_expr.token, "Operand of " +
+                    astPlusMinus.op.getText() +  " has type " + left_type_sym.getName() +  " instead of Int");
+             error = true;
+        }
 
-        return null;
+        if (error == true) return null;
+        return TypeSymbol.INT;
     }
 
     @Override
     public TypeSymbol visit(ASTRelational astRelational) {
-        return null;
+        TypeSymbol left_expression_type = astRelational.left_expr.accept(this);
+        TypeSymbol right_expression_type = astRelational.right_expr.accept(this);
+
+        if (astRelational.op.getText().compareTo("=") != 0) {
+            if (left_expression_type != null && left_expression_type.getName().compareTo("Int") != 0) {
+                SymbolTable.error(astRelational.ctx, astRelational.left_expr.token, "Operand of " +
+                        astRelational.op.getText() +  " has type " + left_expression_type.getName() +  " instead of Int");
+            }
+
+            if (right_expression_type != null && right_expression_type.getName().compareTo("Int") != 0) {
+                SymbolTable.error(astRelational.ctx, astRelational.right_expr.token, "Operand of " +
+                        astRelational.op.getText() +  " has type " + right_expression_type.getName() +  " instead of Int");
+            }
+        } else if (left_expression_type != null && right_expression_type!= null) {
+            String left_type = left_expression_type.getName();
+            String right_type = right_expression_type.getName();
+            if ((left_type.compareTo("Int") == 0 && right_type.compareTo("Int") != 0) ||
+                    (left_type.compareTo("Int") != 0 && right_type.compareTo("Int") == 0) ||
+                    (left_type.compareTo("String") != 0 && right_type.compareTo("String") == 0) ||
+                    (left_type.compareTo("String") == 0 && right_type.compareTo("String") != 0) ||
+                    (left_type.compareTo("Bool") == 0 && right_type.compareTo("Bool") != 0) ||
+                    (left_type.compareTo("Bool") != 0 && right_type.compareTo("Bool") == 0)) {
+                SymbolTable.error(astRelational.ctx, astRelational.op, "Cannot compare " +
+                        left_type + " with " + right_type);
+            }
+        }
+
+        return TypeSymbol.BOOL;
     }
 
     @Override
@@ -79,6 +133,10 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         String type = astFormal.type.getText();
         TypeSymbol class_scope = (TypeSymbol) current_scope.getParent();
 
+        if (astFormal.id.sym == null) {
+            return null;
+        }
+
         TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(type, "");
 
         if (type.compareTo("SELF_TYPE") != 0 && formal_type == null) {
@@ -87,15 +145,72 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                     id + " with undefined type " + type);
             return null;
         }
-        if (astFormal.id.sym != null)
-            astFormal.id.sym.setType(formal_type);
+        astFormal.id.sym.setType(formal_type);
 
-        return null;
+        return formal_type;
     }
 
     @Override
     public TypeSymbol visit(ASTFormalInit astFormalInit) {
-        return null;
+        String id = astFormalInit.id.token.getText();
+        String type = astFormalInit.type.getText();
+
+        if (astFormalInit.id.sym == null) {
+            return null;
+        }
+
+        TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(type, "");
+        if (formal_type == null) {
+            SymbolTable.error(astFormalInit.ctx, astFormalInit.type, "Let variable " + astFormalInit.id.token.getText() +
+                    " has undefined type " + type);
+            return null;
+        }
+
+        // trebuie cautat expresia de initializare in scope-ul care nu contine parametrul formal
+        Scope scope = current_scope;
+        current_scope = new FunctionSymbol(((FunctionSymbol)current_scope).getName(), scope.getParent());
+        Map<String, Symbol> symbol_table = ((FunctionSymbol)scope).getSymbolTable();
+        Symbol sym = symbol_table.get(astFormalInit.expr.token.getText());
+        if (sym != null) {
+            symbol_table.remove(sym.getName());
+        }
+        ((FunctionSymbol) current_scope).setSymbolTable(symbol_table);
+
+        TypeSymbol init_type = astFormalInit.expr.accept(this);
+        current_scope = scope;
+        if (init_type == null) {
+            return null;
+        }
+
+        boolean compatible_type = false;
+        if (formal_type.getName().compareTo(init_type.getName()) != 0) {
+            String parent_type = init_type.getTypeParent();
+            if (parent_type != null) {
+                TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                while (parent_type_sym != null) {
+                    if (parent_type_sym.getName().compareTo(formal_type.getName()) == 0) {
+                        compatible_type = true;
+                        break;
+                    }
+                    parent_type = parent_type_sym.getTypeParent();
+                    parent_type_sym = null;
+                    if (parent_type != null) {
+                        parent_type_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                    }
+                }
+            }
+        } else {
+            compatible_type = true;
+        }
+
+        if (!compatible_type) {
+            SymbolTable.error(astFormalInit.ctx, astFormalInit.expr.token, "Type " + init_type.getName() +
+                    " of initialization expression of identifier " +  astFormalInit.id.token.getText() +
+                    " is incompatible with declared type " + astFormalInit.type.getText());
+        }
+
+        astFormalInit.id.sym.setType(formal_type);
+        return formal_type;
     }
 
     @Override
@@ -122,6 +237,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                 }
             }
         }
+
         current_scope = (TypeSymbol) astClass.sym;
         for (ASTFeature f : astClass.features) {
             f.accept(this);
@@ -151,6 +267,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         for (ASTFormal f : astMethod.formals) {
             f.accept(this);
         }
+        astMethod.body.accept(this);
         current_scope = class_scope;
 
         String parent_type = ((TypeSymbol)current_scope).getTypeParent();
@@ -230,10 +347,10 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
 
 
-
+        TypeSymbol return_type = (TypeSymbol) SymbolTable.globals.lookup(astMethod.type.getText(), "");
         //FunctionSymbol sym = (FunctionSymbol) current_scope.lookup(id, "methodSymbol");
 
-        return null;
+        return return_type;
     }
 
     @Override
@@ -248,12 +365,94 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTLet astLet) {
-        return null;
+        Scope scope = current_scope;
+        current_scope = (FunctionSymbol) astLet.sym;
+
+        boolean error = false;
+
+        for (ASTFormalInit f : astLet.formals) {
+            if (f.accept(this) == null) {
+                error = true;
+            }
+        }
+
+        if (error) return null;
+
+        TypeSymbol type = astLet.ex.accept(this);
+        current_scope = scope;
+        return type;
     }
 
     @Override
     public TypeSymbol visit(ASTCase astCase) {
-        return null;
+
+        TypeSymbol type_sym = astCase.expr.accept(this);
+        if (type_sym == null) {
+            return null;
+        }
+
+        ArrayList<TypeSymbol> branches_types = new ArrayList<>();
+
+        TypeSymbol type = null;
+
+        for (ASTCaseBranch b : astCase.branches) {
+            type = b.accept(this);
+            if (type != null) branches_types.add(type);
+        }
+
+        // verify if all case branches have the same type
+        boolean same_type = true;
+        for (int i = 0; i < branches_types.size() - 1; i++) {
+            if (branches_types.get(i).getName().compareTo(branches_types.get(i + 1).getName()) != 0) {
+                same_type = false;
+                break;
+            }
+        }
+        if (same_type) return type;
+
+        // build parent lists for each branch
+        List<List<String>> parent_types = new ArrayList<>();
+
+        int max_length = 0;
+        int max_length_list_index = 0;
+        for (int i = 0; i < branches_types.size(); i++) {
+            int length = 0;
+            parent_types.add(new ArrayList<>());
+            while (true) {
+
+                String parent_type = branches_types.get(i).getTypeParent();
+                TypeSymbol parent_type_symbol = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                if (parent_type_symbol == null) {
+                    break;
+                }
+                length++;
+                if (length > max_length) {
+                    max_length = length;
+                    max_length_list_index = i;
+                }
+                parent_types.get(i).add(parent_type);
+
+                branches_types.remove(i);
+                branches_types.add(i, parent_type_symbol);
+            }
+        }
+
+        List<String> longest_list = parent_types.get(max_length_list_index);
+        parent_types.remove(max_length_list_index);
+        parent_types.add(0, longest_list);
+        List<String> commons = new ArrayList<String>();
+        commons.addAll(parent_types.get(0));
+        for (ListIterator<List<String>> iter = parent_types.listIterator(1); iter.hasNext(); ) {
+            commons.retainAll(iter.next());
+        }
+        String lowest_common_ancestor = null;
+        TypeSymbol lowest_common_ancestor_type = null;
+        if (commons.size() > 0) {
+            lowest_common_ancestor = commons.get(0);
+            lowest_common_ancestor_type = (TypeSymbol) SymbolTable.globals.lookup(lowest_common_ancestor, "");
+        }
+        return lowest_common_ancestor_type;
+
     }
 
     @Override
@@ -269,12 +468,23 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTComplement astComplement) {
-        return null;
+        TypeSymbol type_sym = astComplement.expr.accept(this);
+
+        if (type_sym != null && type_sym.getName().compareTo("Int") != 0) {
+            SymbolTable.error(astComplement.ctx, astComplement.expr.token, "Operand of " +
+                    astComplement.complement.getText() +  " has type " + type_sym.getName() +  " instead of Int");
+        }
+        return TypeSymbol.INT;
     }
 
     @Override
     public TypeSymbol visit(ASTNot astNot) {
-        return null;
+        TypeSymbol type_sym = astNot.expr.accept(this);
+        if (type_sym.getName().compareTo("Bool") != 0) {
+            SymbolTable.error(astNot.ctx, astNot.expr.token, "Operand of not has type " +
+                    type_sym.getName() + " instead of Bool");
+        }
+        return TypeSymbol.BOOL;
     }
 
     @Override
@@ -299,12 +509,19 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTMember astMember) {
+        Symbol member_sym = astMember.id.sym;
+        if (member_sym == null) {
+            return null;
+        }
+
         TypeSymbol sym = (TypeSymbol) current_scope.lookup(astMember.type.getText(), "");
         if (sym == null) {
             SymbolTable.error(astMember.context, astMember.type, "Class " + ((TypeSymbol)current_scope).getName() + " has attribute " +
                     astMember.id.token.getText() + " with undefined type " + astMember.type.getText());
             return null;
         }
+        astMember.id.sym.setType(sym);
+
         String parent_type = ((TypeSymbol)current_scope).getTypeParent();
         TypeSymbol parent_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "sym");
         while (parent_sym != null) {
@@ -357,7 +574,37 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTCaseBranch astCaseBranch) {
-        return null;
+
+        if (astCaseBranch.sym == null) {
+            return  null;
+        }
+
+        String type = astCaseBranch.type.getText();
+
+        if (type.compareTo("SELF_TYPE") == 0) {
+            SymbolTable.error(astCaseBranch.ctx, astCaseBranch.type, "Case variable " +
+                    astCaseBranch.id.token.getText() + " has illegal type SELF_TYPE");
+            return null;
+        }
+
+        TypeSymbol type_sym = (TypeSymbol) SymbolTable.globals.lookup(type, "");
+        if (type_sym == null) {
+            SymbolTable.error(astCaseBranch.ctx, astCaseBranch.type, "Case variable " +
+                    astCaseBranch.id.token.getText() + " has undefined type " + type);
+            return null;
+        }
+
+        astCaseBranch.id.sym.setType(type_sym);
+
+
+        Scope scope = current_scope;
+        current_scope = (CaseSymbol) astCaseBranch.sym;
+        current_scope.modify(astCaseBranch.id.sym);
+
+        TypeSymbol case_branch_type = astCaseBranch.results.accept(this);
+
+        current_scope = scope;
+        return case_branch_type;
     }
 
     @Override

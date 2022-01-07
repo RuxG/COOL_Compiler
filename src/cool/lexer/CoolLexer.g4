@@ -72,8 +72,9 @@ DIV : '/';
 // comparison op
 ASSIGN : '<-';
 EQUAL : '=';
-LT : '<';
 LE : '<=';
+LT : '<';
+
 // special identifiers
 SELF_TYPE: 'SELF_TYPE';
 SELF: 'self';
@@ -97,7 +98,7 @@ INT : DIGIT+;
 
 BOOL: TRUE | FALSE;
 TRUE: 't' ('r' | 'R') ('u' | 'U') ('e' | 'E');
-FALSE: 'f' ('a' | 'A') ('l' | 'L') ('s' | 'S');
+FALSE: 'f' ('a' | 'A') ('l' | 'L') ('s' | 'S') ('e' | 'E');
 
 STRING : '"' {length = 0; str.setLength(0);  null_char_error = false;}
 (( NULL_CHAR {null_char_error = true; })
