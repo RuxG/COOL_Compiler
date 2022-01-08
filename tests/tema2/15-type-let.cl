@@ -9,7 +9,7 @@ class A {
              in
                  (x + y + z)
     };
-    
+
     g(u : Bool) : Object {
         u <- let x : Int <- 1,
                  y : Int <- x,

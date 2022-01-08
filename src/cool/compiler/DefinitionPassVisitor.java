@@ -87,6 +87,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTImplicitCall astImplicitCall) {
+        //astImplicitCall.
         return null;
     }
 
@@ -174,6 +175,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
             SymbolTable.error(astClass.context, astClass.start, "Class " + astClass.type.getText() + " is redefined");
         }
 
+
         sym.setParent(currentScope);
         if (astClass.parent_type != null) {
             sym.setTypeParent(astClass.parent_type.getText());
@@ -226,6 +228,11 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTBlock astBlock) {
+
+        for (ASTExpression e : astBlock.exprs) {
+            e.accept(this);
+        }
+
         return null;
     }
 
@@ -298,6 +305,9 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTIf astIf) {
+        astIf.cond.accept(this);
+        astIf.thenBranch.accept(this);
+        astIf.elseBranch.accept(this);
 
         return null;
     }
