@@ -1,12 +1,12 @@
 "19-self_type.cl", line 5:11, Semantic error: Method h of class A has formal parameter y with illegal type SELF_TYPE
 Exception in thread "main" java.lang.NullPointerException: Cannot invoke "cool.structures.TypeSymbol.getName()" because "id_type_sym" is null
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:961)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:872)
 	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
 	at cool.compiler.ASTMember.accept(ASTNode.java:212)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:527)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:458)
 	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
 	at cool.compiler.ASTClass.accept(ASTNode.java:455)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:840)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:756)
 	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
 	at cool.compiler.ASTProg.accept(ASTNode.java:472)
 	at cool.compiler.Compiler.main(Compiler.java:617)

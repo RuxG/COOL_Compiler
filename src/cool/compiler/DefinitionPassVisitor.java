@@ -158,7 +158,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTClass astClass) {
 
         if (astClass.type.getText().compareTo("SELF_TYPE") == 0) {
-            SymbolTable.error(astClass.context, astClass.start, "Class has illegal name SELF_TYPE");
+            SymbolTable.error(astClass.context, astClass.type, "Class has illegal name SELF_TYPE");
         }
 
         if (astClass.parent_type != null) {
@@ -168,13 +168,13 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
                     (parent_type.compareTo("Bool") == 0) ||
                     (parent_type.compareTo("String") == 0) || (parent_type.compareTo("SELF_TYPE") == 0)) {
 
-                SymbolTable.error(astClass.context, astClass.start, "Class " + astClass.type.getText() + " has illegal parent " + parent_type);
+                SymbolTable.error(astClass.context, astClass.parent_type, "Class " + astClass.type.getText() + " has illegal parent " + parent_type);
             }
         }
 
         TypeSymbol sym = new TypeSymbol(astClass.type.getText());
         if (!SymbolTable.globals.add(sym)) {
-            SymbolTable.error(astClass.context, astClass.start, "Class " + astClass.type.getText() + " is redefined");
+            SymbolTable.error(astClass.context, astClass.type, "Class " + astClass.type.getText() + " is redefined");
         }
 
 
