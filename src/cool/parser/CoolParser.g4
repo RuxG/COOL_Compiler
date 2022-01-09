@@ -15,7 +15,7 @@ program
 cls : CLASS (type=TYPE_ID | type=SELF_TYPE) (INHERITS (parent=TYPE_ID | parent=SELF_TYPE))? LBRACE (feature SEMI)* RBRACE
 ;
 
-feature : id=(ID | SELF) LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS TYPE_ID LBRACE ex=expr RBRACE                 # method
+feature : id=(ID | SELF) LPAREN (formal (COMMA formal)*)? RPAREN TWO_POINTS type=(TYPE_ID | SELF_TYPE) LBRACE ex=expr RBRACE                 # method
         | formal (ASSIGN ex=expr)?                                                                   # member
 ;
 
@@ -25,14 +25,14 @@ formal : id=(ID | SELF) TWO_POINTS type=(TYPE_ID | SELF_TYPE) ;
 case_branch : id=(ID | SELF) TWO_POINTS type=(TYPE_ID | SELF_TYPE) RESULT result=expr;
 
 expr :
-  ex=expr (AROND TYPE_ID)? POINT ID LPAREN (expr (COMMA expr)*)? RPAREN                              # call_explicit
+  ex=expr (AROND type=(TYPE_ID | SELF_TYPE))? POINT ID LPAREN (expr (COMMA expr)*)? RPAREN           # call_explicit
  | ID LPAREN (expr (COMMA expr)*)? RPAREN                                                            # call_implicit
  | IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI                                         # if
  | WHILE cond=expr LOOP body=expr POOL                                                               # while
  | LBRACE (expr SEMI)+ RBRACE                                                                        # block
  | LET formal_init (COMMA formal_init)* IN body=expr                                                 # let
  | CASE ex=expr OF (case_branch SEMI)+ ESAC                                                          # case
- | NEW TYPE_ID                                                                                       # new
+ | NEW type=(TYPE_ID | SELF_TYPE)                                                                     # new
  | ISVOID ex=expr                                                                                    # isvoid
  | COMPLEMENT ex=expr                                                                                # complement
  | left=expr op=(MULT | DIV) right=expr                                                              # multDiv

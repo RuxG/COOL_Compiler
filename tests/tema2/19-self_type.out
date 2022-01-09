@@ -1,8 +1,13 @@
-"19-self_type.cl", line 5:24, Syntax error: mismatched input 'SELF_TYPE' expecting TYPE_ID
-"19-self_type.cl", line 9:13, Syntax error: extraneous input 'if' expecting {'}', 'self', ID}
-"19-self_type.cl", line 10:15, Syntax error: no viable alternative at input 'x<-'
-"19-self_type.cl", line 11:15, Syntax error: no viable alternative at input 'x<-'
-"19-self_type.cl", line 12:15, Syntax error: no viable alternative at input 'u<-'
-"19-self_type.cl", line 14:13, Syntax error: extraneous input '0' expecting {'}', 'self', ID}
-"19-self_type.cl", line 16:5, Syntax error: extraneous input '}' expecting ';'
-Compilation halted
+"19-self_type.cl", line 5:11, Semantic error: Method h of class A has formal parameter y with illegal type SELF_TYPE
+Exception in thread "main" java.lang.NullPointerException: Cannot invoke "cool.structures.TypeSymbol.getName()" because "id_type_sym" is null
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:961)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
+	at cool.compiler.ASTMember.accept(ASTNode.java:212)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:527)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
+	at cool.compiler.ASTClass.accept(ASTNode.java:455)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:840)
+	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
+	at cool.compiler.ASTProg.accept(ASTNode.java:472)
+	at cool.compiler.Compiler.main(Compiler.java:617)
+	at cool.tester.Tester2.main(Tester2.java:34)

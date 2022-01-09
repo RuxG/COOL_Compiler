@@ -1,4 +1,4 @@
-// Generated from /home/student/Desktop/Tema2/Tema2/src/cool/parser/CoolParser.g4 by ANTLR 4.8
+// Generated from /home/student/Desktop/Tema2/Tema2/out/production/Tema2/cool/parser/CoolParser.g4 by ANTLR 4.8
 
     package cool.parser;
 

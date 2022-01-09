@@ -19,6 +19,9 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
         TypeSymbol type_sym = sym.getType();
+        if (type_sym == null && sym.getTypeStr() != null) {
+            return (TypeSymbol) SymbolTable.globals.lookup(sym.getTypeStr(), "");
+        }
         return type_sym;
     }
 
@@ -38,7 +41,147 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTExplicitCall astExplicitCall) {
-        return null;
+
+
+        String method_id = astExplicitCall.id.token.getText();
+        TypeSymbol caller_type = astExplicitCall.expr.accept(this);
+
+        FunctionSymbol method_symbol;
+        Map<String, Symbol> symbols;
+
+        if (caller_type == null) {
+            return null;
+        }
+        String caller_name = ((TypeSymbol) caller_type).getName();
+
+        if (astExplicitCall.type != null) {
+            String static_type = astExplicitCall.type.getText();
+
+            if (static_type.compareTo("SELF_TYPE") == 0) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.type, "Type of static dispatch cannot be SELF_TYPE");
+                return null;
+            }
+            TypeSymbol method_class = (TypeSymbol) SymbolTable.globals.lookup(astExplicitCall.type.getText(), "");
+            if (method_class == null) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.type, "Type " + astExplicitCall.type.getText() +
+                        " of static dispatch is undefined");
+                return null;
+            }
+
+            method_symbol = (FunctionSymbol) method_class.lookup(method_id, "methodSymbol");
+            if (method_symbol == null) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.id.token, "Undefined method " +
+                        astExplicitCall.id.token.getText() + " in class " + astExplicitCall.type.getText());
+                return null;
+            }
+            TypeSymbol return_type = (TypeSymbol) SymbolTable.globals.lookup(method_symbol.getReturnType(), "");
+
+            boolean compatible_type = false;
+            if (caller_name.compareTo(static_type) != 0) {
+                String parent_type = ((TypeSymbol) caller_type).getTypeParent();
+                if (parent_type != null) {
+                    TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                    while (parent_type_sym != null) {
+                        if (parent_type_sym.getName().compareTo(static_type) == 0) {
+                            compatible_type = true;
+                            break;
+                        }
+                        parent_type = parent_type_sym.getTypeParent();
+                        parent_type_sym = null;
+                        if (parent_type != null) {
+                            parent_type_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                        }
+                    }
+                }
+            } else {
+                compatible_type = true;
+            }
+            if (!compatible_type) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.type, "Type " + static_type + " of static dispatch is not a superclass of type " +
+                        caller_name);
+                return return_type;
+            }
+            symbols = method_symbol.getSymbolTable();
+            if (symbols.size() != astExplicitCall.args.size()) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.id.token, "Method " + method_id +
+                        " of class " + static_type + " is applied to wrong number of arguments");
+                return return_type;
+            }
+        } else {
+             method_symbol = (FunctionSymbol) caller_type.lookup(method_id, "methodSymbol");
+             if (method_symbol == null) {
+                 SymbolTable.error(astExplicitCall.ctx, astExplicitCall.id.token, "Undefined method " +
+                         method_id + " in class " + caller_name);
+                 return null;
+             }
+            TypeSymbol return_type = (TypeSymbol) SymbolTable.globals.lookup(method_symbol.getReturnType(), "");
+
+            symbols = method_symbol.getSymbolTable();
+            if (symbols.size() != astExplicitCall.args.size()) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.id.token, "Method " + method_id +
+                        " of class " + caller_name + " is applied to wrong number of arguments");
+                return return_type;
+            }
+        }
+
+        Set<String> formal_keys = symbols.keySet();
+
+        int i = 0;
+        Scope scope = current_scope;
+        current_scope = method_symbol;
+        TypeSymbol return_type = (TypeSymbol) SymbolTable.globals.lookup(method_symbol.getReturnType(), "");
+        for (String formal_key : formal_keys) {
+
+            Symbol formal_symbol = symbols.get(formal_key);
+            TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(formal_symbol.getTypeStr(), "");
+            if (formal_type == null) {
+                current_scope = scope;
+                return return_type;
+            }
+
+            TypeSymbol argument_symbol = astExplicitCall.args.get(i).accept(this);
+            boolean compatible_types = false;
+
+            if (formal_type.getName().compareTo(argument_symbol.getName()) == 0) {
+                compatible_types = true;
+            } else if (formal_type.getName().compareTo("Int") != 0 && formal_type.getName().compareTo("String") != 0 &&
+                formal_type.getName().compareTo("Bool") != 0) {
+
+
+                String parent_type = argument_symbol.getTypeParent();
+                if (parent_type != null) {
+                    TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                    while (parent_type_sym != null) {
+                        if (parent_type_sym.getName().compareTo(formal_type.getName()) == 0) {
+                            compatible_types = true;
+                            break;
+                        }
+                        parent_type = parent_type_sym.getTypeParent();
+                        parent_type_sym = null;
+                        if (parent_type != null) {
+                            parent_type_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                        }
+                    }
+                }
+            }
+            if (!compatible_types) {
+                SymbolTable.error(astExplicitCall.ctx, astExplicitCall.args.get(i).token, "In call to method " +
+                        method_id + " of class " + caller_name + ", actual type " +
+                        argument_symbol.getName() + " of formal parameter " +
+                        formal_key + " is incompatible with declared type " +
+                        formal_type.getName());
+                current_scope = scope;
+                return return_type;
+            }
+            i++;
+        }
+
+
+
+        current_scope = scope;
+
+        return return_type;
+
     }
 
     @Override
@@ -126,6 +269,9 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         TypeSymbol id_type = astAssign.id.accept(this);
 
         Symbol id_sym = current_scope.lookup(astAssign.id.token.getText(), "");
+        if (id_sym == null) {
+            return null;
+        }
         astAssign.id.sym = id_sym;
         astAssign.id.sym.setType(id_type);
 
@@ -135,7 +281,11 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
 
         boolean compatible_type = false;
-        if (id_type.getName().compareTo(init_type.getName()) != 0) {
+        if (id_type.getName().compareTo(init_type.getName()) != 0 ) {
+            if (id_type.getName().compareTo("Int") != 0 &&
+                    id_type.getName().compareTo("Bool") != 0 && id_type.getName().compareTo("String") != 0 ) {
+
+            }
             String parent_type = init_type.getTypeParent();
             if (parent_type != null) {
                 TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
@@ -165,7 +315,82 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTImplicitCall astImplicitCall) {
-        return null;
+
+        Scope scope = current_scope;
+        while (! (scope instanceof TypeSymbol)) {
+            scope = scope.getParent();
+        }
+        String class_name = ((TypeSymbol) scope).getName();
+
+        String method_id = astImplicitCall.id.token.getText();
+        Symbol method_symbol = current_scope.lookup(method_id, "methodSymbol");
+        if (method_symbol == null) {
+            SymbolTable.error(astImplicitCall.ctx, astImplicitCall.id.token, "Undefined method " +
+                    method_id + " in class " + ((TypeSymbol)scope).getName());
+            return null;
+        }
+        Map<String, Symbol> symbols = ((FunctionSymbol) method_symbol).getSymbolTable();
+        TypeSymbol return_type = (TypeSymbol) SymbolTable.globals.lookup(((FunctionSymbol)method_symbol).getReturnType(), "");
+        if (symbols.size() != astImplicitCall.args.size()) {
+            SymbolTable.error(astImplicitCall.ctx, astImplicitCall.id.token, "Method " + method_id +
+                    " of class " + class_name + " is applied to wrong number of arguments");
+            return return_type;
+        }
+
+        Set<String> formal_keys = symbols.keySet();
+
+        int i = 0;
+        Scope method_scope = current_scope;
+        current_scope = (Scope) method_symbol;
+        for (String formal_key : formal_keys) {
+
+            Symbol formal_symbol = symbols.get(formal_key);
+            TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(formal_symbol.getTypeStr(), "");
+            if (formal_type == null) {
+                current_scope = method_scope;
+                return return_type;
+            }
+
+            TypeSymbol argument_symbol = astImplicitCall.args.get(i).accept(this);
+            boolean compatible_types = false;
+
+            if (formal_type.getName().compareTo(argument_symbol.getName()) == 0) {
+                compatible_types = true;
+            } else if (formal_type.getName().compareTo("Int") != 0 && formal_type.getName().compareTo("String") != 0 &&
+                    formal_type.getName().compareTo("Bool") != 0) {
+
+
+                String parent_type = argument_symbol.getTypeParent();
+                if (parent_type != null) {
+                    TypeSymbol parent_type_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
+                    while (parent_type_sym != null) {
+                        if (parent_type_sym.getName().compareTo(formal_type.getName()) == 0) {
+                            compatible_types = true;
+                            break;
+                        }
+                        parent_type = parent_type_sym.getTypeParent();
+                        parent_type_sym = null;
+                        if (parent_type != null) {
+                            parent_type_sym = (TypeSymbol) current_scope.lookup(parent_type, "sym");
+                        }
+                    }
+                }
+            }
+            if (!compatible_types) {
+                SymbolTable.error(astImplicitCall.ctx, astImplicitCall.args.get(i).token, "In call to method " +
+                        method_id + " of class " + class_name + ", actual type " +
+                        argument_symbol.getName() + " of formal parameter " +
+                        formal_key + " is incompatible with declared type " +
+                        formal_type.getName());
+                current_scope = method_scope;
+                return return_type;
+            }
+            i++;
+        }
+
+        current_scope = method_scope;
+
+        return return_type;
     }
 
     @Override
@@ -600,7 +825,11 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTSelf astSelf) {
-        return null;
+        Scope scope = current_scope;
+        while (! (scope instanceof TypeSymbol)) {
+            scope = scope.getParent();
+        }
+        return (TypeSymbol) scope;
     }
 
     @Override
@@ -627,7 +856,9 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         TypeSymbol then_branch_type = astIf.thenBranch.accept(this);
         TypeSymbol else_branch_type = astIf.elseBranch.accept(this);
 
-        if (then_branch_type.getName().compareTo(else_branch_type.getName()) == 0) {
+        if (then_branch_type == null || else_branch_type == null) return null;
+
+            if (then_branch_type.getName().compareTo(else_branch_type.getName()) == 0) {
             return then_branch_type;
         }
 
@@ -691,8 +922,8 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
 
-        TypeSymbol sym = (TypeSymbol) current_scope.lookup(astMember.type.getText(), "");
-        if (sym == null) {
+        TypeSymbol sym = (TypeSymbol) SymbolTable.globals.lookup(astMember.type.getText(), "");
+        if (sym == null && astMember.type.getText().compareTo("SELF_TYPE") != 0) {
             SymbolTable.error(astMember.context, astMember.type, "Class " + ((TypeSymbol)current_scope).getName() + " has attribute " +
                     astMember.id.token.getText() + " with undefined type " + astMember.type.getText());
             return null;
@@ -790,6 +1021,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTType astType) {
-        return null;
+        return (TypeSymbol) SymbolTable.globals.lookup(astType.start.getText(), "");
     }
 };

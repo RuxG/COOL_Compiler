@@ -42,16 +42,17 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     }
 
     @Override
-    public Symbol lookup(String s, String symbolCategory) {
-        var sym = symbols.get(s);
+    public Symbol lookup(String str, String symbolCategory) {
+        Symbol sym = null;
+        sym = symbols.get(str);
 
-        if (sym != null)
+        if (sym != null) {
             return sym;
+        }
 
-        // Dacă nu găsim simbolul în domeniul de vizibilitate curent, îl căutăm
-        // în domeniul de deasupra.
-        if (parent != null)
-            return parent.lookup(s, symbolCategory);
+        if (parent != null) {
+            return parent.lookup(str, symbolCategory);
+        }
 
         return null;
     }

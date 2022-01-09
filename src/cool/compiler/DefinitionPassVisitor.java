@@ -122,7 +122,9 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         }
 
         sym.setContext(astFormal.id.ctx);
+        sym.setTypeStr(astFormal.type.getText());
         astFormal.id.sym = sym;
+
 
         return null;
     }
@@ -358,6 +360,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTType astType) {
+        astType.accept(this);
         return null;
     }
 };

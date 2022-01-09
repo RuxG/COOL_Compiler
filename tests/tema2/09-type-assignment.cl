@@ -7,15 +7,15 @@ class A {
     f() : Object {
         b <- b
     };
-    
+
     g() : Object {
         b <- c
     };
-    
+
     h() : Object {
         c <- b
     };
-    
+
     i() : Object {
         self <- self
     };

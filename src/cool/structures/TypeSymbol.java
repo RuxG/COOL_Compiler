@@ -62,9 +62,10 @@ public class TypeSymbol extends Symbol implements Scope {
             return sym;
         }
 
-        if (parent != null) {
-            return parent.lookup(str, symbolCategory);
-        }
+        if (typeParent != null) {
+            TypeSymbol parent_type_sym = (TypeSymbol) parent.lookup(typeParent, "");
+            return parent_type_sym.lookup(str, "methodSymbol");
+         }
 
         return null;
     }

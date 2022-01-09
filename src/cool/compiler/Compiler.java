@@ -149,7 +149,7 @@ public class Compiler {
                 }
                 ASTExpression expr = (ASTExpression) visit(ctx.ex);
                 ASTId id = new ASTId(ctx, ctx.id);
-                Token type = ctx.TYPE_ID().getSymbol();
+                Token type = ctx.type;
                 return new ASTMethod( ctx, id, formals, type, expr, ctx.start);
             }
 
@@ -188,7 +188,7 @@ public class Compiler {
                 return new ASTFormalInit((ParserRuleContext) ctx, new ASTId((ParserRuleContext) ctx, ctx.formal().id), formal.type, assign, expr, ctx.start);
             }
 
-            @Override public ASTNode visitNew(CoolParser.NewContext ctx) { return new ASTNew((ParserRuleContext) ctx,ctx.NEW().getSymbol(), ctx.TYPE_ID().getSymbol(), ctx.start); }
+            @Override public ASTNode visitNew(CoolParser.NewContext ctx) { return new ASTNew((ParserRuleContext) ctx,ctx.NEW().getSymbol(), ctx.type, ctx.start); }
 
             @Override public ASTNode visitPlusMinus(CoolParser.PlusMinusContext ctx) {
                 return new ASTPlusMinus((ParserRuleContext) ctx,(ASTExpression)visit(ctx.left), (ASTExpression)visit(ctx.right), ctx.op, ctx.start);
@@ -209,17 +209,14 @@ public class Compiler {
             @Override public ASTNode visitInt(CoolParser.IntContext ctx) { return new ASTInt((ParserRuleContext) ctx,ctx.INT().getSymbol()); }
 
             @Override public ASTNode visitCall_explicit(CoolParser.Call_explicitContext ctx) {
-                Token type = null;
-                if (ctx.TYPE_ID() != null) {
-                    type = ctx.TYPE_ID().getSymbol();
-                }
+
                 ASTExpression expr = (ASTExpression) visit (ctx.ex);
                 ASTId id = new ASTId((ParserRuleContext) ctx, ctx.ID().getSymbol());
                 List<ASTExpression> ex = new ArrayList<>();
                 for (int i = 1; i < ctx.expr().size() ; i++) {
                     ex.add((ASTExpression)visit(ctx.expr().get(i)));
                 }
-                return new ASTExplicitCall((ParserRuleContext) ctx, expr, type, id, ex, ctx.start);
+                return new ASTExplicitCall((ParserRuleContext) ctx, expr, ctx.type, id, ex, ctx.start);
             }
 
             @Override public ASTNode visitNot(CoolParser.NotContext ctx) {
