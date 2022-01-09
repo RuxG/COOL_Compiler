@@ -1,13 +1,11 @@
 "19-self_type.cl", line 5:11, Semantic error: Method h of class A has formal parameter y with illegal type SELF_TYPE
-Exception in thread "main" java.lang.NullPointerException: Cannot invoke "cool.structures.TypeSymbol.getName()" because "id_type_sym" is null
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:736)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTMember.accept(ASTNode.java:212)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:412)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTClass.accept(ASTNode.java:455)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:662)
-	at cool.compiler.ResolutionPassVisitor.visit(ResolutionPassVisitor.java:10)
-	at cool.compiler.ASTProg.accept(ASTNode.java:472)
-	at cool.compiler.Compiler.main(Compiler.java:617)
-	at cool.tester.Tester2.main(Tester2.java:34)
+"19-self_type.cl", line 2:9, Semantic error: Class A has attribute x with undefined type SELF_TYPE
+"19-self_type.cl", line 7:21, Semantic error: Let variable z has undefined type SELF_TYPE
+"19-self_type.cl", line 11:22, Semantic error: new is used with undefined type SELF_TYPE
+"19-self_type.cl", line 12:22, Semantic error: new is used with undefined type SELF_TYPE
+"19-self_type.cl", line 5:5, Semantic error: Class A has method h  with undefined return type SELF_TYPE
+"19-self_type.cl", line 18:5, Semantic error: Class A has method f1  with undefined return type SELF_TYPE
+"19-self_type.cl", line 34:19, Semantic error: Undefined method g in class A
+"19-self_type.cl", line 43:24, Semantic error: Undefined method g in class A
+"19-self_type.cl", line 46:21, Semantic error: Undefined method g in class A
+Compilation halted

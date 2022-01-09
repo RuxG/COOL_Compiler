@@ -14,7 +14,6 @@ public class DefaultScope implements Scope {
 
     @Override
     public boolean add(Symbol sym) {
-        // Reject duplicates in the same scope.
         if (symbols.containsKey(sym.getName()))
             return false;
         
@@ -24,9 +23,8 @@ public class DefaultScope implements Scope {
     }
 
     @Override
-    public boolean modify(Symbol sym) {
+    public void modify(Symbol sym) {
         symbols.put(sym.name, sym);
-        return true;
     }
 
     @Override

@@ -3,17 +3,9 @@ package cool.structures;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// O functie este atât simbol, cât și domeniu de vizibilitate pentru parametrii
-// săi formali.
-
-/*
- TODO 1: Implementați clasa FunctionSymbol, suprascriind metodele din interfață
-        și adăugându-i un nume.
- */
 public class FunctionSymbol extends IdSymbol implements Scope {
     protected Scope parent;
 
-    // LinkedHashMap reține ordinea adăugării.
     protected Map<String, Symbol> symbols = new LinkedHashMap<>();
 
     protected String returnType;
@@ -25,8 +17,7 @@ public class FunctionSymbol extends IdSymbol implements Scope {
 
     @Override
     public boolean add(Symbol s) {
-        // Ne asigurăm că simbolul nu există deja în domeniul de vizibilitate
-        // curent.
+
         if (symbols.containsKey(s.getName()))
             return false;
 
@@ -36,15 +27,13 @@ public class FunctionSymbol extends IdSymbol implements Scope {
     }
 
     @Override
-    public boolean modify(Symbol sym) {
+    public void modify(Symbol sym) {
         symbols.put(sym.name, sym);
-        return true;
     }
 
     @Override
     public Symbol lookup(String str, String symbolCategory) {
-        Symbol sym = null;
-        sym = symbols.get(str);
+        Symbol sym = symbols.get(str);
 
         if (sym != null) {
             return sym;

@@ -40,8 +40,7 @@ public class TypeSymbol extends Symbol implements Scope {
     }
 
     @Override
-    public boolean modify(Symbol sym) {
-        return false;
+    public void modify(Symbol sym) {
     }
 
     @Override
@@ -49,13 +48,8 @@ public class TypeSymbol extends Symbol implements Scope {
         Symbol sym = null;
         if (symbolCategory.compareTo("methodSymbol") == 0) {
             sym = methodsSymbols.get(str);
-        } else if (symbolCategory.compareTo("memberSymbol") == 0) {
-            sym = membersSymbols.get(str);
         } else {
-            sym = methodsSymbols.get(str);
-            if (sym == null) {
-                sym = membersSymbols.get(str);
-            }
+            sym = membersSymbols.get(str);
         }
 
         if (sym != null) {
@@ -64,7 +58,7 @@ public class TypeSymbol extends Symbol implements Scope {
 
         if (typeParent != null) {
             TypeSymbol parent_type_sym = (TypeSymbol) parent.lookup(typeParent, "");
-            return parent_type_sym.lookup(str, "methodSymbol");
+            return parent_type_sym.lookup(str, symbolCategory);
          }
 
         return null;

@@ -1,15 +1,12 @@
 package cool.compiler;
 
-import cool.compiler.*;
 import cool.structures.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
     Scope current_scope = null;
-
 
     @Override
     public TypeSymbol visit(ASTId astId) {
@@ -19,9 +16,9 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
 
-        TypeSymbol type_sym = sym.getType();
-        if (type_sym == null && sym.getTypeStr() != null) {
-            type_sym = (TypeSymbol) SymbolTable.globals.lookup(sym.getTypeStr(), "");
+        TypeSymbol type_sym = (TypeSymbol) SymbolTable.globals.lookup(sym.getType(), "");
+        if (type_sym == null && sym.getType() != null) {
+            type_sym = (TypeSymbol) SymbolTable.globals.lookup(sym.getType(), "");
         }
 
         return type_sym;
@@ -31,6 +28,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
     public TypeSymbol visit(ASTInt astInt) {
         return TypeSymbol.INT;
     }
+
     @Override
     public TypeSymbol visit(ASTBool astBool) {
         return TypeSymbol.BOOL;
@@ -40,7 +38,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
     public TypeSymbol visit(ASTString astString) {
         return TypeSymbol.STRING;
     }
-
 
     @Override
     public TypeSymbol visit(ASTExplicitCall astExplicitCall) {
@@ -80,7 +77,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                 return null;
             }
 
-
             boolean compatible_type = compatible_types(caller_type, caller_name, static_type_name);
 
             if (!compatible_type) {
@@ -88,7 +84,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                         caller_name);
                 return null;
             }
-
             method_class = static_type_name;
 
         } else {
@@ -124,13 +119,11 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         if (right_type_sym != null && right_type_sym.getName().compareTo("Int") != 0) {
             SymbolTable.error(astMultDiv.ctx, astMultDiv.right_expr.token, "Operand of " +
                     astMultDiv.type.getText() +  " has type " + right_type_sym.getName() +  " instead of Int");
-            return null;
-        }
 
-        if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
+        } else if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
             SymbolTable.error(astMultDiv.ctx, astMultDiv.left_expr.token, "Operand of " +
                     astMultDiv.type.getText() +  " has type " + left_type_sym.getName() +  " instead of Int");
-            return null;
+
         }
 
         return TypeSymbol.INT;
@@ -144,12 +137,10 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         if (right_type_sym != null && right_type_sym.getName().compareTo("Int") != 0) {
             SymbolTable.error(astPlusMinus.ctx, astPlusMinus.right_expr.token, "Operand of " +
                     astPlusMinus.op.getText() + " has type " + right_type_sym.getName() + " instead of Int");
-            return null;
-        }
-        if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
+
+        } else if (left_type_sym != null && left_type_sym.getName().compareTo("Int") != 0) {
             SymbolTable.error(astPlusMinus.ctx, astPlusMinus.left_expr.token, "Operand of " +
                     astPlusMinus.op.getText() +  " has type " + left_type_sym.getName() +  " instead of Int");
-            return null;
         }
 
         return TypeSymbol.INT;
@@ -199,7 +190,12 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
 
-        TypeSymbol id_type = astAssign.id.accept(this);
+        TypeSymbol id_type_sym = astAssign.id.accept(this);
+        String id_type = null;
+        if (id_type_sym != null) {
+            id_type = id_type_sym.getName();
+        }
+
         Symbol id_sym = current_scope.lookup(id, "");
         if (id_sym == null) {
             return null;
@@ -210,59 +206,19 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
         TypeSymbol init_type = astAssign.expr.accept(this);
         if (init_type == null) {
-            return id_type;
-        }
-
-        boolean compatible_type = compatible_types(init_type, init_type.getName(), id_type.getName());
-        if (!compatible_type) {
-            SymbolTable.error(astAssign.ctx, astAssign.expr.token, "Type " + init_type.getName() +
-                    " of assigned expression is incompatible with declared type " +
-                    id_type.getName() + " of identifier " + id);
             return null;
         }
 
-        return id_type.getType();
-    }
-
-    void check_formals_arguments_compatibility(ParserRuleContext ctx, FunctionSymbol method_symbol, ArrayList<ASTExpression> args, String method_id,
-                                            String class_name) {
-
-        Scope temp_scope = current_scope;
-        current_scope = (Scope) method_symbol;
-
-        Map<String, Symbol> symbols = ((FunctionSymbol) method_symbol).getSymbolTable();
-        Set<String> formal_keys = symbols.keySet();
-
-        int i = 0;
-        boolean compatible = true;
-        for (String formal_key : formal_keys) {
-
-            Symbol formal_symbol = symbols.get(formal_key);
-            TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(formal_symbol.getTypeStr(), "");
-            if (formal_type == null) {
-                compatible = false;
-                break;
-            }
-
-            TypeSymbol argument_symbol = args.get(i).accept(this);
-            boolean compatible_types = compatible_types(argument_symbol, argument_symbol.getName(), formal_type.getName());
-
-            if (!compatible_types) {
-                SymbolTable.error(ctx, args.get(i).token, "In call to method " +
-                        method_id + " of class " + class_name + ", actual type " +
-                        argument_symbol.getName() + " of formal parameter " +
-                        formal_key + " is incompatible with declared type " +
-                        formal_type.getName());
-
-                compatible = false;
-                break;
-            }
-            i++;
+        boolean compatible_type = compatible_types(init_type, init_type.getName(), id_type);
+        if (!compatible_type) {
+            SymbolTable.error(astAssign.ctx, astAssign.expr.token, "Type " + init_type.getName() +
+                    " of assigned expression is incompatible with declared type " +
+                    id_type + " of identifier " + id);
+            return null;
         }
 
-        current_scope = temp_scope;
-
-        return;
+        TypeSymbol type = (TypeSymbol) SymbolTable.globals.lookup(init_type.getType(), "");
+        return type;
     }
 
     @Override
@@ -309,13 +265,19 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
         TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(type, "");
 
-        if (type.compareTo("SELF_TYPE") != 0 && formal_type == null) {
+       /* if (type.compareTo("SELF_TYPE") != 0 && formal_type == null) {
+            SymbolTable.error(astFormal.context, astFormal.type, "Method " +
+                    ((FunctionSymbol) current_scope).getName() + " of class " + class_scope.getName() + " has formal parameter " +
+                    id + " with undefined type " + type);
+            return null;
+        }*/
+        if (formal_type == null) {
             SymbolTable.error(astFormal.context, astFormal.type, "Method " +
                     ((FunctionSymbol) current_scope).getName() + " of class " + class_scope.getName() + " has formal parameter " +
                     id + " with undefined type " + type);
             return null;
         }
-        astFormal.id.sym.setType(formal_type);
+        astFormal.id.sym.setType(formal_type.getName());
 
         return formal_type;
     }
@@ -378,7 +340,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                     " is incompatible with declared type " + astFormalInit.type.getText());
         }
 
-        astFormalInit.id.sym.setType(formal_type);
+        astFormalInit.id.sym.setType(formal_type.getName());
         return formal_type;
     }
 
@@ -424,6 +386,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         if (sym == null) {
             return null;
         }
+
         String type = sym.getReturnType();
         String id = sym.getName();
 
@@ -434,13 +397,11 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             f.accept(this);
         }
         TypeSymbol body_type = astMethod.body.accept(this);
-
         current_scope = class_scope;
 
         String parent_type = ((TypeSymbol)current_scope).getTypeParent();
         TypeSymbol parent_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "");
         Map<String, Symbol> method_symbols_table = sym.getSymbolTable();
-
 
         while (parent_sym != null) {
             Symbol overriden_method = parent_sym.lookup(astMethod.id.token.getText(), "methodSymbol");
@@ -451,7 +412,9 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                     SymbolTable.error(astMethod.context, astMethod.id.token, "Class " + ((TypeSymbol)current_scope).getName() + " overrides method " +
                             astMethod.id.token.getText() + " with different number of formal parameters");
                     return null;
+
                 } else {
+
                     // check return type
                     String method_return_type = sym.getReturnType();
                     String overriden_method_return_type = ((FunctionSymbol) overriden_method).getReturnType();
@@ -481,12 +444,12 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
                     for (int i = 0; i < method_symbols.size(); i++) {
                         Symbol method_formal = method_symbols.get(i);
                         Symbol overriden_formal = overriden_method_symbols.get(i);
-                        if (method_formal.getType().getName().compareTo(overriden_formal.getType().getName()) != 0) {
+                        if (method_formal.getType().compareTo(overriden_formal.getType()) != 0) {
                             ASTFormal formal = astMethod.formals.get(i);
                             SymbolTable.error(astMethod.context, formal.type, "Class " + ((TypeSymbol)current_scope).getName() + " overrides method " +
                                     astMethod.id.token.getText() + " but changes type of formal parameter " +
-                                    method_formal.getName() + " from " + overriden_formal.getType().getName() + " to " +
-                                    method_formal.getType().getName());
+                                    method_formal.getName() + " from " + overriden_formal.getType() + " to " +
+                                    method_formal.getType());
                             return null;
                         }
                     }
@@ -559,18 +522,12 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         Scope scope = current_scope;
         current_scope = (FunctionSymbol) astLet.sym;
 
-        boolean error = false;
-
         for (ASTFormalInit f : astLet.formals) {
-            if (f.accept(this) == null) {
-                error = true;
-            }
+            f.accept(this);
         }
 
         TypeSymbol type = astLet.ex.accept(this);
         current_scope = scope;
-
-        if (error) return null;
 
         return type;
     }
@@ -585,22 +542,13 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
         ArrayList<TypeSymbol> branches_types = new ArrayList<>();
 
-        TypeSymbol type = null;
+        TypeSymbol type;
 
         for (ASTCaseBranch b : astCase.branches) {
             type = b.accept(this);
             if (type != null) branches_types.add(type);
         }
 
-        // verify if all case branches have the same type
-        boolean same_type = true;
-        for (int i = 0; i < branches_types.size() - 1; i++) {
-            if (branches_types.get(i).getName().compareTo(branches_types.get(i + 1).getName()) != 0) {
-                same_type = false;
-                break;
-            }
-        }
-        if (same_type) return type;
         TypeSymbol lowest_common_ancestor = lowest_common_ancestor(branches_types);
 
         return lowest_common_ancestor;
@@ -619,7 +567,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
     @Override
     public TypeSymbol visit(ASTIsVoid astIsVoid) {
-        TypeSymbol type = astIsVoid.expr.accept(this);
+        astIsVoid.expr.accept(this);
         return TypeSymbol.BOOL;
     }
 
@@ -632,16 +580,18 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             SymbolTable.error(astComplement.ctx, astComplement.expr.token, "Operand of " +
                     astComplement.complement.getText() +  " has type " + type_sym.getName() +  " instead of Int");
         }
+
         return TypeSymbol.INT;
     }
 
     @Override
     public TypeSymbol visit(ASTNot astNot) {
         TypeSymbol type_sym = astNot.expr.accept(this);
+
         if (type_sym.getName().compareTo("Bool") != 0) {
-            SymbolTable.error(astNot.ctx, astNot.expr.token, "Operand of not has type " +
-                    type_sym.getName() + " instead of Bool");
+            SymbolTable.error(astNot.ctx, astNot.expr.token, "Operand of not has type " + type_sym.getName() + " instead of Bool");
         }
+
         return TypeSymbol.BOOL;
     }
 
@@ -661,6 +611,7 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         for (var cls: astProg.classes) {
             cls.accept(this);
         }
+
         return null;
     }
 
@@ -680,10 +631,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
         if (then_branch_type == null || else_branch_type == null) return null;
 
-            if (then_branch_type.getName().compareTo(else_branch_type.getName()) == 0) {
-            return then_branch_type;
-        }
-
         ArrayList<TypeSymbol> branches_types = new ArrayList<>();
         branches_types.add(then_branch_type);
         branches_types.add(else_branch_type);
@@ -691,8 +638,6 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         TypeSymbol lowest_common_ancestor = lowest_common_ancestor(branches_types);
 
         return lowest_common_ancestor;
-
-
     }
 
     @Override
@@ -703,12 +648,13 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
 
         TypeSymbol sym = (TypeSymbol) SymbolTable.globals.lookup(astMember.type.getText(), "");
-        if (sym == null && astMember.type.getText().compareTo("SELF_TYPE") != 0) {
+
+        if (sym == null) {
             SymbolTable.error(astMember.context, astMember.type, "Class " + ((TypeSymbol)current_scope).getName() + " has attribute " +
                     astMember.id.token.getText() + " with undefined type " + astMember.type.getText());
             return null;
         }
-        astMember.id.sym.setType(sym);
+        astMember.id.sym.setType(sym.getName());
 
         String parent_type = ((TypeSymbol)current_scope).getTypeParent();
         TypeSymbol parent_sym = (TypeSymbol) SymbolTable.globals.lookup(parent_type, "sym");
@@ -728,11 +674,16 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
 
         if (astMember.expr != null) {
             TypeSymbol expr_type_sym = astMember.expr.accept(this);
-            TypeSymbol id_type_sym = astMember.id.sym.getType();
+            TypeSymbol id_type_sym = (TypeSymbol) SymbolTable.globals.lookup(astMember.id.sym.getType(), "");
 
             if (expr_type_sym == null) {
                 return null;
             }
+
+            if (id_type_sym == null) {
+                return null;
+            }
+
             boolean compatible_types = compatible_types(expr_type_sym, expr_type_sym.getName(), id_type_sym.getName());
 
             if (!compatible_types) {
@@ -768,11 +719,11 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
             return null;
         }
 
-        astCaseBranch.id.sym.setType(type_sym);
+        astCaseBranch.id.sym.setType(type_sym.getName());
 
 
         Scope scope = current_scope;
-        current_scope = (CaseSymbol) astCaseBranch.sym;
+        current_scope = (FunctionSymbol) astCaseBranch.sym;
         current_scope.modify(astCaseBranch.id.sym);
 
         TypeSymbol case_branch_type = astCaseBranch.results.accept(this);
@@ -787,6 +738,15 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
     }
 
     TypeSymbol lowest_common_ancestor(List<TypeSymbol> types) {
+
+        boolean same_type = true;
+        for (int i = 0; i < types.size() - 1; i++) {
+            if (types.get(i).getName().compareTo(types.get(i + 1).getName()) != 0) {
+                same_type = false;
+                break;
+            }
+        }
+        if (same_type) return types.get(0);
 
         List<List<String>> parent_types = new ArrayList<>();
 
@@ -819,22 +779,26 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
 
         List<String> longest_list = parent_types.get(max_length_list_index);
+
         parent_types.remove(max_length_list_index);
         parent_types.add(0, longest_list);
+
         List<String> commons = new ArrayList<String>();
         commons.addAll(parent_types.get(0));
+
         for (ListIterator<List<String>> iter = parent_types.listIterator(1); iter.hasNext(); ) {
             commons.retainAll(iter.next());
         }
-        String lowest_common_ancestor = null;
+
+        String lowest_common_ancestor;
         TypeSymbol lowest_common_ancestor_type = null;
         if (commons.size() > 0) {
             lowest_common_ancestor = commons.get(0);
             lowest_common_ancestor_type = (TypeSymbol) SymbolTable.globals.lookup(lowest_common_ancestor, "");
         }
         return lowest_common_ancestor_type;
-
     }
+
     boolean compatible_types(Symbol type1_sym, String type1, String type2) {
         boolean compatible_type = false;
 
@@ -867,4 +831,43 @@ public class ResolutionPassVisitor implements ASTVisitor<TypeSymbol> {
         }
         return compatible_type;
     }
+
+    void check_formals_arguments_compatibility(ParserRuleContext ctx, FunctionSymbol method_symbol, ArrayList<ASTExpression> args, String method_id,
+                                               String class_name) {
+
+        Scope temp_scope = current_scope;
+        current_scope = (Scope) method_symbol;
+
+        Map<String, Symbol> symbols = ((FunctionSymbol) method_symbol).getSymbolTable();
+        Set<String> formal_keys = symbols.keySet();
+
+        int i = 0;
+        for (String formal_key : formal_keys) {
+
+            Symbol formal_symbol = symbols.get(formal_key);
+            TypeSymbol formal_type = (TypeSymbol) SymbolTable.globals.lookup(formal_symbol.getType(), "");
+            if (formal_type == null) {
+                break;
+            }
+
+            TypeSymbol argument_symbol = args.get(i).accept(this);
+            boolean compatible_types = compatible_types(argument_symbol, argument_symbol.getName(), formal_type.getName());
+
+            if (!compatible_types) {
+                SymbolTable.error(ctx, args.get(i).token, "In call to method " +
+                        method_id + " of class " + class_name + ", actual type " +
+                        argument_symbol.getName() + " of formal parameter " +
+                        formal_key + " is incompatible with declared type " +
+                        formal_type.getName());
+
+                break;
+            }
+            i++;
+        }
+
+        current_scope = temp_scope;
+
+        return;
+    }
+
 };

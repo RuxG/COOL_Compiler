@@ -7,8 +7,6 @@ import org.antlr.v4.runtime.*;
 import cool.compiler.Compiler;
 import cool.parser.CoolParser;
 
-import static cool.structures.TypeSymbol.OBJECT;
-
 public class SymbolTable {
     public static Scope globals;
     
@@ -24,15 +22,15 @@ public class SymbolTable {
             TypeSymbol.OBJECT.setParent(globals);
 
             FunctionSymbol abortSymbol = new FunctionSymbol("abort", TypeSymbol.OBJECT);
-            abortSymbol.setType(TypeSymbol.OBJECT);
+            abortSymbol.setType(TypeSymbol.OBJECT.getName());
             TypeSymbol.OBJECT.add(abortSymbol);
 
             FunctionSymbol type_nameSymbol = new FunctionSymbol("type_name", TypeSymbol.OBJECT);
-            type_nameSymbol.setType(TypeSymbol.STRING);
+            type_nameSymbol.setType(TypeSymbol.STRING.getName());
             TypeSymbol.OBJECT.add(type_nameSymbol);
 
             FunctionSymbol copySymbol = new FunctionSymbol("copy", TypeSymbol.OBJECT);
-            // copySymbol.add(TypeSymbol.CE_TIP?????)  -- SELF_TYPE
+            // copySymbol
             TypeSymbol.OBJECT.add(copySymbol);
         }
 
@@ -51,15 +49,15 @@ public class SymbolTable {
             TypeSymbol.STRING.setTypeParent(TypeSymbol.OBJECT.name);
 
             FunctionSymbol lengthSymbol = new FunctionSymbol("length", TypeSymbol.STRING);
-            lengthSymbol.setType(TypeSymbol.INT);
+            lengthSymbol.setType(TypeSymbol.INT.getName());
             TypeSymbol.STRING.add(lengthSymbol);
 
             FunctionSymbol concatSymbol = new FunctionSymbol("concat", TypeSymbol.STRING);
-            concatSymbol.setType(TypeSymbol.STRING);
+            concatSymbol.setType(TypeSymbol.STRING.getName());
             TypeSymbol.STRING.add(concatSymbol);
 
             FunctionSymbol substrSymbol = new FunctionSymbol("substr", TypeSymbol.STRING);
-            substrSymbol.setType(TypeSymbol.STRING);
+            substrSymbol.setType(TypeSymbol.STRING.getName());
             TypeSymbol.STRING.add(substrSymbol);
         }
 
@@ -68,19 +66,19 @@ public class SymbolTable {
             TypeSymbol.IO.setTypeParent(TypeSymbol.OBJECT.name);
 
             FunctionSymbol out_stringSymbol = new FunctionSymbol("out_string", TypeSymbol.IO);
-            // out_stringSymbol.setType(ce tip???); -- SELF_TYPE
+            // out_stringSymbol.setType -- SELF_TYPE
             TypeSymbol.IO.add(out_stringSymbol);
 
             FunctionSymbol out_intSymbol = new FunctionSymbol("out_int", TypeSymbol.IO);
-            // out_intSymbol.setType(ce tip???); -- SELF_TYPE
+            // out_intSymbol.setType  -- SELF_TYPE
             TypeSymbol.IO.add(out_intSymbol);
 
             FunctionSymbol in_stringSymbol = new FunctionSymbol("in_string", TypeSymbol.IO);
-            in_stringSymbol.setType(TypeSymbol.IO);
+            in_stringSymbol.setType(TypeSymbol.IO.getName());
             TypeSymbol.IO.add(in_stringSymbol);
 
             FunctionSymbol in_intSymbol = new FunctionSymbol("in_int", TypeSymbol.IO);
-            in_intSymbol.setType(TypeSymbol.INT);
+            in_intSymbol.setType(TypeSymbol.INT.getName());
             TypeSymbol.IO.add(in_intSymbol);
         }
 

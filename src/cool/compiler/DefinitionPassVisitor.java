@@ -1,9 +1,6 @@
 package cool.compiler;
 
-import cool.compiler.*;
 import cool.structures.*;
-
-import java.lang.reflect.Type;
 
 public class DefinitionPassVisitor implements ASTVisitor<Void> {
     Scope currentScope = null;
@@ -121,8 +118,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
             return null;
         }
 
-        sym.setContext(astFormal.id.ctx);
-        sym.setTypeStr(astFormal.type.getText());
+        sym.setType(astFormal.type.getText());
         astFormal.id.sym = sym;
 
 
@@ -144,7 +140,6 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
             return null;
         }
 
-        sym.setContext(astFormalInit.id.ctx);
         astFormalInit.id.sym = sym;
 
         if (astFormalInit.expr != null) {
@@ -342,7 +337,7 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
             return null;
         }
 
-        CaseSymbol case_scope = new CaseSymbol("", currentScope);
+        FunctionSymbol case_scope = new FunctionSymbol("", currentScope);
         currentScope = case_scope;
 
         IdSymbol sym = new IdSymbol(astCaseBranch.id.token.getText());
