@@ -1,0 +1,5 @@
+"20-basic-classes.cl", line 6:20, Semantic error: Method out_string of class A is applied to wrong number of arguments
+"20-basic-classes.cl", line 7:20, Semantic error: Method out_string of class A is applied to wrong number of arguments
+"20-basic-classes.cl", line 10:23, Semantic error: Method concat of class String is applied to wrong number of arguments
+"20-basic-classes.cl", line 11:23, Semantic error: Method substr of class String is applied to wrong number of arguments
+Compilation halted

@@ -1,0 +1,11 @@
+"19-self_type.cl", line 5:11, Semantic error: Method h of class A has formal parameter y with illegal type SELF_TYPE
+"19-self_type.cl", line 2:9, Semantic error: Class A has attribute x with undefined type SELF_TYPE
+"19-self_type.cl", line 7:21, Semantic error: Let variable z has undefined type SELF_TYPE
+"19-self_type.cl", line 11:22, Semantic error: new is used with undefined type SELF_TYPE
+"19-self_type.cl", line 12:22, Semantic error: new is used with undefined type SELF_TYPE
+"19-self_type.cl", line 5:5, Semantic error: Class A has method h  with undefined return type SELF_TYPE
+"19-self_type.cl", line 18:5, Semantic error: Class A has method f1  with undefined return type SELF_TYPE
+"19-self_type.cl", line 34:19, Semantic error: Undefined method g in class A
+"19-self_type.cl", line 43:24, Semantic error: Undefined method g in class A
+"19-self_type.cl", line 46:21, Semantic error: Undefined method g in class A
+Compilation halted
