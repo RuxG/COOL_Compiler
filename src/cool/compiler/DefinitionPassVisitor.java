@@ -42,26 +42,6 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTPlusMinus astPlusMinus) {
         astPlusMinus.left_expr.accept(this);
         astPlusMinus.right_expr.accept(this);
-      //  left = (x + y - z);
-      //  right = (a + b - c);
-        // (x + y - z) + (a + b - c)
-        //functie {
-        // definit aici, sau ca membrii in clasa
-        //      (x + y - z) + (a + b - c)
-        //}
-        // let l <- ((x + y - z) + (a + b - c))  : definit in functie, sau ca membrii in clasa
-        //
-        // Unde poti defini o variabila? Membru in clasa, let, case, in metode.
-        // In contextul din care provin mizeriile, sa vedem ce tip au.
-
-        // stiind ca x, y, z, a, b, c sunt INT
-        // atunci rezulta INT
-        // left este de tip INT
-        // right e de tip INT
-
-        // context al expresiei plus-minus <- ar trebui sa exista contextele de definire al subexpresiilor.
-        //
-
 
         return null;
     }
@@ -193,7 +173,6 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTMethod astMethod) {
         FunctionSymbol sym = new FunctionSymbol(astMethod.id.token.getText(), currentScope);
-        //System.out.println("DEFPASSVISITOR: " + astMethod.id.token.getText());
         if (!currentScope.add(sym)) {
                 SymbolTable.error(astMethod.context, astMethod.id.token, "Class " + ((TypeSymbol)currentScope).getName() +
                         " redefines method " + astMethod.id.token.getText());
